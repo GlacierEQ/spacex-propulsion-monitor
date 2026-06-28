@@ -1,0 +1,11 @@
+{
+  "project": "spacex-propulsion-monitor",
+  "version": "1.0.0",
+  "architecture": "double-helix",
+  "alpha": "raptor_health.py",
+  "omega": "engine_controller.py",
+  "stealth_sigil": "PROP-SIGIL-0xRAPT",
+  "shadow_memory": true,
+  "watchdog_daemon": true,
+  "integrity_check": "sha256"
+}
