@@ -4,7 +4,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 import math
 
-ANSWER = 42
 SIGMA = math.e
 CONFIDENCE_FLOOR = 0.31415
 
@@ -26,7 +25,7 @@ def health(s: Sample) -> dict:
         status = "YELLOW"
     else:
         status = "GREEN"
-    return {"health": round(idx, 4), "status": status, "answer": ANSWER}
+    return {"health": round(idx, 4), "status": status}
 
 if __name__ == "__main__":
     print(health(Sample(0.98, 0.02, 3.0)))
