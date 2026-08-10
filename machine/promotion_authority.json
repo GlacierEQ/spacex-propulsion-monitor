@@ -1,0 +1,11 @@
+{
+  "schema": "glaciereq.promotion-authority-grant.v1",
+  "repository": "GlacierEQ/spacex-propulsion-monitor",
+  "source_sha": "d441e067adb52da9e3a30ac4f6f2db2771b401fc36bfbe9db0b7338f1500359a",
+  "proof_receipt_digest": "afd10b2dec60af40451d96e6abb6b10e19c161b03957691acfba9793f09a3ec2",
+  "not_after": 1788927149.234226,
+  "mac": "c3ab6fc63199409603719a66488ef3b7cc69023680ac770e6e17e5d7c6648612",
+  "issuer": "local_operator_promotion_authority",
+  "verified": true,
+  "secret_ref": "src/promotion_authority.py::LOCAL_OPERATOR_SECRET"
+}

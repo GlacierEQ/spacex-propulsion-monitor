@@ -1,0 +1,27 @@
+{
+  "schema": "glaciereq.operability-receipt.v1",
+  "repository": "GlacierEQ/spacex-propulsion-monitor",
+  "at": "2026-08-10T04:12Z",
+  "source_sha": "d441e067adb52da9e3a30ac4f6f2db2771b401fc36bfbe9db0b7338f1500359a",
+  "entry": "scripts/operate.py",
+  "primary_output": {
+    "module": "prop_health",
+    "ok": true,
+    "repository": "GlacierEQ/spacex-propulsion-monitor",
+    "smoke": {
+      "args": [
+        "Sample(chamber_p_pct=1.0, mr_error=1.0, "
+      ],
+      "content_checked": true,
+      "invoked": true,
+      "kind": "fn",
+      "name": "health",
+      "result": {
+        "health": 0.64,
+        "status": "YELLOW"
+      }
+    }
+  },
+  "dual_run_ok": true,
+  "result": "PASS"
+}

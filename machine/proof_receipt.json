@@ -1,0 +1,31 @@
+{
+  "schema": "glaciereq.proof-receipt.v1",
+  "repository": "GlacierEQ/spacex-propulsion-monitor",
+  "source_sha": "d441e067adb52da9e3a30ac4f6f2db2771b401fc36bfbe9db0b7338f1500359a",
+  "proof_id": "elite-spacex-propulsion-monitor-1786335149",
+  "environment": {
+    "python": "/Users/kcbflux/job-app/excellence/.venv-elite/bin/python",
+    "PYTHONPATH": "/Users/kcbflux/job-app/repos/spacex-propulsion-monitor:/Users/kcbflux/job-app/repos/spacex-propulsion-monitor/src",
+    "entry": "unittest"
+  },
+  "tests": [
+    "/Users/kcbflux/job-app/excellence/.venv-elite/bin/python -m unittest discover -s tests -v (x2)"
+  ],
+  "adversarial_tests": [
+    "tests/test_adversarial.py"
+  ],
+  "runtime": {
+    "operate": "scripts/operate.py (x2)",
+    "dual_run_ok": true,
+    "proof_dual_run_ok": true
+  },
+  "result": "PASS",
+  "limitations": [
+    "not production deployed",
+    "reference implementation only"
+  ],
+  "timestamp": "2026-08-10T04:12Z",
+  "artifact_hashes": {
+    "operability_receipt": "0c32fedfe5e06474da43f2764beff711c9aed2c1074ed5d610bfeeec8ed20fa1"
+  }
+}
