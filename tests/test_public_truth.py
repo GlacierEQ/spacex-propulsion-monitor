@@ -5,6 +5,17 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 TOKEN = "LOCAL_PROPULSION_HEALTH_SIMULATION_NOT_FLIGHT_ENGINE_AUTHORITY"
+APPROVED_CAPABILITIES = [
+    "bounded-synthetic-health-indexing",
+    "per-unit-multi-sensor-windowing",
+    "threshold-and-outlier-detection",
+    "local-state-transition-simulation",
+    "heuristic-threshold-trend-projection",
+    "cross-sensor-correlation",
+    "simple-degradation-curve-fitting",
+    "dependency-free-vibration-spectrum-analysis",
+    "local-python-verification",
+]
 
 
 def read(path: str) -> str:
@@ -45,7 +56,7 @@ def test_machine_truth_matches_current_scope() -> None:
     capabilities = json.loads(read("machine/capabilities.json"))
     target = json.loads(read("machine/target-contract.json"))
     excellence = json.loads(read("machine/excellence-state.json"))
-    assert "hyper-scaling" not in capabilities["capabilities"]
+    assert capabilities["capabilities"] == APPROVED_CAPABILITIES
     assert capabilities["evidence_token"] == TOKEN
     assert target["evidence_token"] == TOKEN
     assert target["verified_capability"] == (
