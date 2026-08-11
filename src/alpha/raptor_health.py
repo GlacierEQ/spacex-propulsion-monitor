@@ -9,6 +9,7 @@ proprietary telemetry.
 from __future__ import annotations
 
 import math
+from collections import deque
 from dataclasses import dataclass
 from enum import Enum, auto
 from typing import Callable, Optional
@@ -177,12 +178,13 @@ class EquipmentHealthMonitor:
         HealthState.OFFLINE: 3,
     }
     _HEALTH_WINDOW = 10
+    _ANOMALY_HISTORY = 100
 
     def __init__(self, config: Optional[EngineConfig] = None):
         self.config = config or EngineConfig()
         self.config.validate()
         self._windows: dict[tuple[int, SensorKind], SensorWindow] = {}
-        self._anomalies: list[AnomalyEvent] = []
+        self._anomalies: deque[AnomalyEvent] = deque(maxlen=self._ANOMALY_HISTORY)
         self._recent_health: dict[int, list[HealthState]] = {}
         self._engine_states: dict[int, HealthState] = {}
         self._anomaly_callbacks: list[Callable[[AnomalyEvent], None]] = []
@@ -323,9 +325,12 @@ class EquipmentHealthMonitor:
                 "sensor": anomaly.sensor.name,
                 "engine": anomaly.engine_id,
                 "value": anomaly.value,
+                "expected_range": list(anomaly.expected_range),
+                "timestamp": anomaly.timestamp,
                 "severity": anomaly.severity,
+                "evidence_state": EVIDENCE_STATE,
             }
-            for anomaly in self._anomalies[-20:]
+            for anomaly in list(self._anomalies)[-20:]
         ]
 
     @property
