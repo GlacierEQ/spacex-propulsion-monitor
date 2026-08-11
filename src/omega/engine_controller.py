@@ -52,6 +52,8 @@ class ThrottleProfile:
     def validate(self) -> None:
         if not self.name:
             raise ValueError("profile name required")
+        if not self.points:
+            raise ValueError("profile requires at least one throttle point")
         previous_time = -math.inf
         for timestamp, throttle in self.points:
             if not math.isfinite(timestamp) or timestamp < 0:
@@ -66,8 +68,6 @@ class ThrottleProfile:
         self.validate()
         if not math.isfinite(elapsed_s) or elapsed_s < 0:
             raise ValueError("elapsed_s must be finite and non-negative")
-        if not self.points:
-            return 100.0
         if elapsed_s <= self.points[0][0]:
             return self.points[0][1]
         if elapsed_s >= self.points[-1][0]:
@@ -84,6 +84,8 @@ class ThrottleProfile:
 
 class EngineController:
     """In-memory simulated engine-state coordinator; no external side effects."""
+
+    _EVENT_HISTORY = 200
 
     def __init__(self, engine_count: int = 9, config: Optional[EngineConfig] = None):
         if (
@@ -119,6 +121,13 @@ class EngineController:
     def on_shutdown(self, callback: Callable[[dict], None]) -> None:
         self._shutdown_callbacks.append(callback)
 
+    def _notify_shutdown(self, payload: dict) -> None:
+        for callback in self._shutdown_callbacks:
+            try:
+                callback(payload)
+            except Exception:
+                self._callback_failures += 1
+
     def start_engines(self) -> dict:
         if self._simulation_start == 0:
             self._simulation_start = time.monotonic()
@@ -135,6 +144,8 @@ class EngineController:
         }
 
     def set_throttle(self, engine_id: int, percent: float) -> bool:
+        if not math.isfinite(percent) or not 0 <= percent <= 100:
+            raise ValueError("simulated throttle must be finite and in 0..100")
         engine_id = self._require_engine_id(engine_id)
         state = self._engines[engine_id]
         if state.mode in (
@@ -143,8 +154,6 @@ class EngineController:
             EngineMode.EMERGENCY_STOP,
         ):
             return False
-        if not math.isfinite(percent) or not 0 <= percent <= 100:
-            raise ValueError("simulated throttle must be finite and in 0..100")
 
         state.throttle_percent = percent
         if percent < 40:
@@ -160,7 +169,10 @@ class EngineController:
     def apply_profile(self, profile_name: str, elapsed_s: float) -> dict:
         profile = self._profiles.get(profile_name)
         if profile is None:
-            return {"error": f"profile {profile_name} not found"}
+            return {
+                "error": f"profile {profile_name} not found",
+                "evidence_state": EVIDENCE_STATE,
+            }
 
         throttle = profile.get_throttle(elapsed_s)
         self._active_profile = profile_name
@@ -186,13 +198,14 @@ class EngineController:
         state.throttle_percent = 0.0
         state.shutdown_reason = str(reason)
         self._log(f"unit_{engine_id}_shutdown")
-
-        payload = {"engine_id": engine_id, "reason": str(reason)}
-        for callback in self._shutdown_callbacks:
-            try:
-                callback(payload)
-            except Exception:
-                self._callback_failures += 1
+        self._notify_shutdown(
+            {
+                "engine_id": engine_id,
+                "reason": str(reason),
+                "mode": EngineMode.SHUTDOWN.name,
+                "evidence_state": EVIDENCE_STATE,
+            }
+        )
         return True
 
     def emergency_stop(self, reason: str = "local simulation") -> dict:
@@ -206,6 +219,14 @@ class EngineController:
             state.shutdown_reason = str(reason)
             stopped.append(engine_id)
             self._log(f"unit_{engine_id}_emergency_stop")
+            self._notify_shutdown(
+                {
+                    "engine_id": engine_id,
+                    "reason": str(reason),
+                    "mode": EngineMode.EMERGENCY_STOP.name,
+                    "evidence_state": EVIDENCE_STATE,
+                }
+            )
 
         return {
             "action": "SIMULATED_EMERGENCY_STOP",
@@ -222,9 +243,13 @@ class EngineController:
         *,
         timestamp: Optional[float] = None,
     ) -> Optional[dict]:
+        """Process one local sample in a single Unix wall-clock time domain.
+
+        ``timestamp`` is seconds since the Unix epoch. When omitted, ``time.time``
+        supplies the timestamp. Explicit and implicit samples for the same
+        engine/sensor pair must therefore be nondecreasing in the same domain.
+        """
         engine_id = self._require_engine_id(engine_id)
-        # Explicit timestamps and defaults share the wall-clock Unix-seconds domain.
-        # Callers supplying timestamps must use the same nondecreasing domain.
         sample_time = time.time() if timestamp is None else timestamp
         reading = SensorReading(
             kind=kind,
@@ -283,6 +308,8 @@ class EngineController:
 
     def _log(self, event: str) -> None:
         self._event_log.append({"time": time.time(), "event": event})
+        if len(self._event_log) > self._EVENT_HISTORY:
+            del self._event_log[:-self._EVENT_HISTORY]
 
     @property
     def event_log(self) -> list[dict]:
