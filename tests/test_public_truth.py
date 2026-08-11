@@ -34,7 +34,8 @@ def test_predictive_source_cannot_claim_validated_raptor_failure_prediction() ->
 
 def test_controller_source_is_in_memory_simulation_only() -> None:
     controller = read("src/omega/engine_controller.py")
-    assert TOKEN in controller
+    assert "from alpha.raptor_health import (" in controller
+    assert "EVIDENCE_STATE," in controller
     assert "no external side effects" in controller
     assert "SIMULATED_STARTUP" in controller
     assert "SIMULATED_EMERGENCY_STOP" in controller
