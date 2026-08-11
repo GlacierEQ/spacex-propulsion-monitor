@@ -1,60 +1,58 @@
-# SpaceX Propulsion Monitor — Engine Health & Performance Telemetry 🔥
+# Multi-Sensor Equipment Health Laboratory
 
-> **Real-time Raptor/Merlin engine telemetry monitoring with predictive health management.**
+> **Deterministic local health scoring, threshold/anomaly detection, trend projection, correlation, and simulated state transitions for synthetic propulsion-like telemetry.**
 
-[![Python](https://img.shields.io/badge/Python-3.9+-blue)]()
-[![C++](https://img.shields.io/badge/C++-17-00599C)]()
-[![Domain](https://img.shields.io/badge/Domain-Propulsion%20Engineering-red)]()
+This is an independent GlacierEQ portfolio repository. It is **not affiliated with, endorsed by, or connected to SpaceX** and has no access to Raptor, Merlin, Falcon, Starship, test-stand, flight, or proprietary engine telemetry or command systems.
 
----
+Evidence state: `LOCAL_PROPULSION_HEALTH_SIMULATION_NOT_FLIGHT_ENGINE_AUTHORITY`
 
-## 🎯 For Recruiters & Hiring Managers
+## Verified repository-owned scope
 
-This repository implements an **engine health monitoring system** — the software that watches every turbopump RPM, combustion chamber pressure, and injector temperature in real-time to predict failures before they happen. It demonstrates:
+The admitted surface is a local software laboratory, not an engine-control system:
 
-- **Multi-parameter monitoring** across 100+ engine telemetry channels simultaneously
-- **Predictive health management** using trending and degradation detection algorithms
-- **Red/yellow limit bands** with configurable alarm thresholds and deadband filtering
-- **Performance computation** calculating specific impulse, mixture ratio, and thrust efficiency in real-time
+- bounded health-index arithmetic for synthetic chamber-pressure ratio, mixture-ratio error, and vibration samples;
+- per-unit multi-sensor rolling windows, means, variance, rate-of-change, threshold checks, and outlier detection;
+- independent health state per simulated unit so one unit's anomaly cannot contaminate unrelated units;
+- fail-closed finite, non-negative, and monotonic sample validation;
+- isolated anomaly/shutdown observers so callback failures do not corrupt the state machine;
+- in-memory simulated startup, throttle-profile, shutdown, and emergency-stop **state transitions** with no external side effects;
+- linear threshold-crossing projection, cross-sensor correlation, simple degradation-curve fitting, and dependency-free vibration spectra;
+- diagnostic scores and projected threshold horizons explicitly labeled as **heuristics, not calibrated failure probability, diagnosis, or remaining useful life**;
+- repository-owned deterministic tests and cold-start operability.
 
-**Why this matters**: Engine health monitoring requires the same **time-series analysis, anomaly detection, and predictive maintenance** skills used in industrial IoT, manufacturing quality control, and infrastructure monitoring at scale.
+Historical class/file names such as `RaptorHealthMonitor`, `EngineController`, and `FailurePrediction` remain for source compatibility. Those names do not establish Raptor data, hardware control, flight authority, or validated failure prediction.
 
----
+## Core implementation
 
-## 🔬 For Engineers & Technical Reviewers
+| Path | Verified role |
+|---|---|
+| `src/prop_health.py` | Bounded local health-index arithmetic |
+| `src/alpha/raptor_health.py` | Generic per-unit rolling sensor/anomaly evaluator; historical class alias retained |
+| `src/omega/engine_controller.py` | In-memory simulated multi-unit state coordinator |
+| `src/omega/predictive_health.py` | Heuristic trend/correlation/degradation/spectral diagnostics |
+| `tests/` | Deterministic and adversarial local proof |
+| `scripts/verify_public_surface.py` | Fail-closed public/machine truth verifier |
 
-### Core Components
+## Evidence boundary
 
-| Component | Language | Purpose |
-|---|---|---|
-| `src/propulsion_monitor.py` | Python | Engine model, performance computation, alarm management |
-| `src/combustion_solver.cpp` | C++ | High-speed combustion equilibrium and Isp computation |
-| `tests/` | Python | Engine test-fire scenario replay with known anomalies |
+This repository does **not** claim:
 
-### Key Metrics
+- SpaceX affiliation, endorsement, employment, or proprietary access;
+- real Raptor, Merlin, Falcon, Starship, or test-stand telemetry;
+- 100+ live telemetry channels, real-time engine monitoring, or production-scale throughput;
+- validated engine-specific pressure, mixture-ratio, turbopump, thrust, or temperature specifications;
+- calibrated failure probability, 30–120 second failure prediction, validated remaining useful life, or certified fault diagnosis;
+- LSTM training on engine test-fire datasets or any proprietary training corpus;
+- real throttle, shutdown, abort, thrust-redistribution, or flight-computer command authority;
+- live MCP, provider, APEX, AKOS, Mastermind, or agent-mesh runtime integration;
+- production deployment, flight readiness, safety certification, or operational suitability.
 
-- **Chamber Pressure (Pc)**: ~300 bar for Raptor full-thrust
-- **Specific Impulse (Isp)**: ~330s sea-level, ~380s vacuum
-- **Mixture Ratio (O/F)**: 3.6:1 LOX/CH4 stoichiometric target
-- **Turbopump RPM**: ~36,000 RPM oxygen, ~27,000 RPM fuel
+Any future claim above this ceiling requires new source, calibrated/independent evidence where applicable, deterministic tests, exact-head receipts, and a new governance admission.
 
----
-
-## 🤖 ML/AI & Programmatic Mesh Integration
-
-- **MCP Tool**: `engine_health(engine_id)` — engine state queryable by flight autonomy agents
-- **Mastermind Sidecar**: Publishes engine alerts to APEX Highway mesh
-- **AI Extension**: LSTM anomaly detector trained on 1000+ engine test-fire datasets
-
-```python
-health = await mcp_client.call_tool("propulsion-monitor", "engine_health", {"engine": "R_C1"})
-```
-
----
-
-## ⚡ Quick Start
+## Reproduce the admitted surface
 
 ```bash
-python3 src/propulsion_monitor.py
-python3 tests/test_propulsion.py
+bash scripts/ci/verify.sh
 ```
+
+The gate compiles the source, runs deterministic/adversarial tests, executes the local operability probe, and verifies the public/machine truth boundary.
