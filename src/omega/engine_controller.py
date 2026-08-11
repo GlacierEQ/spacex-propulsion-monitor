@@ -86,8 +86,12 @@ class EngineController:
     """In-memory simulated engine-state coordinator; no external side effects."""
 
     def __init__(self, engine_count: int = 9, config: Optional[EngineConfig] = None):
-        if not isinstance(engine_count, int) or engine_count <= 0:
-            raise ValueError("engine_count must be a positive integer")
+        if (
+            isinstance(engine_count, bool)
+            or not isinstance(engine_count, int)
+            or engine_count <= 0
+        ):
+            raise ValueError("engine_count must be a positive non-boolean integer")
         self.engine_count = engine_count
         self.health_monitor = RaptorHealthMonitor(config)
         self._engines: dict[int, EngineState] = {
@@ -100,6 +104,13 @@ class EngineController:
         self._shutdown_callbacks: list[Callable[[dict], None]] = []
         self._callback_failures = 0
         self._event_log: list[dict] = []
+
+    def _require_engine_id(self, engine_id: object) -> int:
+        if isinstance(engine_id, bool) or not isinstance(engine_id, int):
+            raise ValueError("engine_id must be a non-boolean integer")
+        if engine_id not in self._engines:
+            raise ValueError("engine_id is outside the simulated fleet")
+        return engine_id
 
     def add_profile(self, profile: ThrottleProfile) -> None:
         profile.validate()
@@ -124,8 +135,9 @@ class EngineController:
         }
 
     def set_throttle(self, engine_id: int, percent: float) -> bool:
-        state = self._engines.get(engine_id)
-        if state is None or state.mode in (
+        engine_id = self._require_engine_id(engine_id)
+        state = self._engines[engine_id]
+        if state.mode in (
             EngineMode.OFF,
             EngineMode.SHUTDOWN,
             EngineMode.EMERGENCY_STOP,
@@ -153,15 +165,9 @@ class EngineController:
         throttle = profile.get_throttle(elapsed_s)
         self._active_profile = profile_name
         results = []
-        for engine_id, state in self._engines.items():
-            if state.mode in (
-                EngineMode.OFF,
-                EngineMode.SHUTDOWN,
-                EngineMode.EMERGENCY_STOP,
-            ):
-                continue
-            state.throttle_percent = throttle
-            results.append({"engine": engine_id, "throttle": throttle})
+        for engine_id in self._engines:
+            if self.set_throttle(engine_id, throttle):
+                results.append({"engine": engine_id, "throttle": throttle})
 
         return {
             "profile": profile_name,
@@ -171,8 +177,9 @@ class EngineController:
         }
 
     def shutdown_engine(self, engine_id: int, reason: str = "manual") -> bool:
-        state = self._engines.get(engine_id)
-        if state is None or state.mode == EngineMode.OFF:
+        engine_id = self._require_engine_id(engine_id)
+        state = self._engines[engine_id]
+        if state.mode == EngineMode.OFF:
             return False
 
         state.mode = EngineMode.SHUTDOWN
@@ -215,9 +222,10 @@ class EngineController:
         *,
         timestamp: Optional[float] = None,
     ) -> Optional[dict]:
-        if engine_id not in self._engines:
-            raise ValueError("engine_id is outside the simulated fleet")
-        sample_time = time.monotonic() if timestamp is None else timestamp
+        engine_id = self._require_engine_id(engine_id)
+        # Explicit timestamps and defaults share the wall-clock Unix-seconds domain.
+        # Callers supplying timestamps must use the same nondecreasing domain.
+        sample_time = time.time() if timestamp is None else timestamp
         reading = SensorReading(
             kind=kind,
             value=value,
