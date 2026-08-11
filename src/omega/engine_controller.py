@@ -191,7 +191,11 @@ class EngineController:
     def shutdown_engine(self, engine_id: int, reason: str = "manual") -> bool:
         engine_id = self._require_engine_id(engine_id)
         state = self._engines[engine_id]
-        if state.mode == EngineMode.OFF:
+        if state.mode in (
+            EngineMode.OFF,
+            EngineMode.SHUTDOWN,
+            EngineMode.EMERGENCY_STOP,
+        ):
             return False
 
         state.mode = EngineMode.SHUTDOWN
@@ -210,9 +214,14 @@ class EngineController:
 
     def emergency_stop(self, reason: str = "local simulation") -> dict:
         stopped = []
+        terminal_modes = {
+            EngineMode.OFF,
+            EngineMode.SHUTDOWN,
+            EngineMode.EMERGENCY_STOP,
+        }
         for engine_id in range(self.engine_count):
             state = self._engines[engine_id]
-            if state.mode == EngineMode.OFF:
+            if state.mode in terminal_modes:
                 continue
             state.mode = EngineMode.EMERGENCY_STOP
             state.throttle_percent = 0.0
@@ -261,7 +270,11 @@ class EngineController:
 
         if anomaly is not None and anomaly.severity == "CRITICAL":
             state = self._engines[engine_id]
-            if state.mode != EngineMode.OFF:
+            if state.mode not in (
+                EngineMode.OFF,
+                EngineMode.SHUTDOWN,
+                EngineMode.EMERGENCY_STOP,
+            ):
                 self.shutdown_engine(engine_id, f"critical:{anomaly.sensor.name}")
 
         self._engines[engine_id].health = self.health_monitor.state_for(engine_id)
