@@ -21,8 +21,10 @@ def main() -> None:
     target = json.loads(read("machine/target-contract.json"))
     excellence = json.loads(read("machine/excellence-state.json"))
 
-    for surface in (readme, health_index, monitor, controller, predictive):
+    for surface in (readme, health_index, monitor, predictive):
         assert TOKEN in surface
+    assert "from alpha.raptor_health import (" in controller
+    assert "EVIDENCE_STATE," in controller
 
     assert "not affiliated with, endorsed by, or connected to SpaceX" in readme
     assert "Historical class/file names" in readme
