@@ -1,31 +1,49 @@
 #!/usr/bin/env python3
-"""Propulsion health index — chamber P, mixture ratio, vibration (portfolio)."""
+"""Bounded local health-index arithmetic for synthetic propulsion-like samples."""
 from __future__ import annotations
-from dataclasses import dataclass
+
 import math
+from dataclasses import dataclass
 
-SIGMA = math.e
-CONFIDENCE_FLOOR = 0.31415
+EVIDENCE_STATE = "LOCAL_PROPULSION_HEALTH_SIMULATION_NOT_FLIGHT_ENGINE_AUTHORITY"
 
-@dataclass
+
+@dataclass(frozen=True)
 class Sample:
-    chamber_p_pct: float  # 0..1 of nominal
-    mr_error: float       # abs mix ratio error
+    chamber_p_pct: float
+    mr_error: float
     vibe_g: float
 
-def health(s: Sample) -> dict:
-    p_term = max(0.0, 1.0 - abs(s.chamber_p_pct - 1.0) * 2)
-    mr_term = max(0.0, 1.0 - s.mr_error * 5)
-    vibe_term = max(0.0, 1.0 - s.vibe_g / 20.0)
-    idx = 0.45 * p_term + 0.35 * mr_term + 0.20 * vibe_term
-    idx = max(CONFIDENCE_FLOOR, min(1.0, idx))
-    if s.chamber_p_pct < 0.7 or s.vibe_g > 15:
+    def validate(self) -> None:
+        values = (self.chamber_p_pct, self.mr_error, self.vibe_g)
+        if any(not math.isfinite(value) for value in values):
+            raise ValueError("health sample values must be finite")
+        if self.chamber_p_pct < 0 or self.mr_error < 0 or self.vibe_g < 0:
+            raise ValueError("health sample values must be non-negative")
+
+
+def health(sample: Sample) -> dict:
+    """Return a local fixture score and categorical status; not failure probability."""
+    sample.validate()
+    pressure_term = max(0.0, 1.0 - abs(sample.chamber_p_pct - 1.0) * 2)
+    mixture_term = max(0.0, 1.0 - sample.mr_error * 5)
+    vibration_term = max(0.0, 1.0 - sample.vibe_g / 20.0)
+    index = 0.45 * pressure_term + 0.35 * mixture_term + 0.20 * vibration_term
+    index = max(0.0, min(1.0, index))
+
+    if sample.chamber_p_pct < 0.7 or sample.vibe_g > 15:
         status = "RED"
-    elif s.mr_error > 0.1 or s.vibe_g > 8:
+    elif sample.mr_error > 0.1 or sample.vibe_g > 8:
         status = "YELLOW"
     else:
         status = "GREEN"
-    return {"health": round(idx, 4), "status": status}
+
+    return {
+        "health": round(index, 4),
+        "status": status,
+        "evidence_state": EVIDENCE_STATE,
+    }
+
 
 if __name__ == "__main__":
     print(health(Sample(0.98, 0.02, 3.0)))
