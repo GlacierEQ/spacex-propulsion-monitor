@@ -31,6 +31,8 @@ class SensorTimeSeries:
     def append(self, value: float, timestamp: float) -> None:
         if not self.sensor_name:
             raise ValueError("sensor_name required")
+        if isinstance(self.engine_id, bool) or not isinstance(self.engine_id, int):
+            raise ValueError("engine_id must be a non-boolean integer")
         if self.engine_id < 0:
             raise ValueError("engine_id must be non-negative")
         _finite(value, "value")
@@ -61,7 +63,8 @@ class FailurePrediction:
     """Compatibility record for a heuristic diagnostic warning.
 
     ``confidence`` is a bounded heuristic score, not calibrated probability.
-    ``predicted_time_s`` is a projected threshold-crossing horizon.
+    ``predicted_time_s`` is a projected threshold-crossing horizon. A value of
+    zero means the illustrative threshold is already violated.
     """
 
     engine_id: int
@@ -442,6 +445,44 @@ class PredictiveHealthMonitor:
         self.vibration_analyzer = VibrationSpectralAnalyzer()
         self._predictions: list[FailurePrediction] = []
 
+    @staticmethod
+    def _engine_id(engine_id: object) -> int:
+        if isinstance(engine_id, bool) or not isinstance(engine_id, int):
+            raise ValueError("engine_id must be a non-boolean integer")
+        if engine_id < 0:
+            raise ValueError("engine_id must be non-negative")
+        return engine_id
+
+    def _active_threshold_warning(
+        self,
+        *,
+        engine_id: int,
+        sensor_name: str,
+        current: float,
+        threshold: Optional[float],
+        direction: str,
+    ) -> Optional[FailurePrediction]:
+        if threshold is None:
+            return None
+        violated = (direction == "above" and current > threshold) or (
+            direction == "below" and current < threshold
+        )
+        if not violated:
+            return None
+        label = "OVERLIMIT_ACTIVE" if direction == "above" else "UNDERLIMIT_ACTIVE"
+        return FailurePrediction(
+            engine_id=engine_id,
+            failure_mode=f"{sensor_name.upper()}_{label}",
+            predicted_time_s=0.0,
+            confidence=1.0,
+            evidence=[
+                f"current={current:.4g}",
+                f"fixture_threshold={threshold:.4g}",
+                "active illustrative threshold violation; deterministic rule match, not probability",
+            ],
+            severity="CRITICAL",
+        )
+
     def ingest_sensor_data(
         self,
         engine_id: int,
@@ -449,8 +490,7 @@ class PredictiveHealthMonitor:
         value: float,
         timestamp: float,
     ) -> list[FailurePrediction]:
-        if engine_id < 0:
-            raise ValueError("engine_id must be non-negative")
+        engine_id = self._engine_id(engine_id)
         if not sensor_name:
             raise ValueError("sensor_name required")
         _finite(value, "value")
@@ -468,13 +508,23 @@ class PredictiveHealthMonitor:
             "vibration": (None, 5.0),
             "thrust": (2000000.0, 2800000.0),
         }
-        if series.count >= 20 and sensor_name in fixture_thresholds:
+        if sensor_name in fixture_thresholds:
             low, high = fixture_thresholds[sensor_name]
             for threshold, direction, label in (
                 (high, "above", "OVERLIMIT_TREND"),
                 (low, "below", "UNDERLIMIT_TREND"),
             ):
-                if threshold is None:
+                active = self._active_threshold_warning(
+                    engine_id=engine_id,
+                    sensor_name=sensor_name,
+                    current=series.latest,
+                    threshold=threshold,
+                    direction=direction,
+                )
+                if active is not None:
+                    warnings.append(active)
+                    continue
+                if threshold is None or series.count < 20:
                     continue
                 projection = self.trend_extrapolator.extrapolate_to_threshold(
                     series,
@@ -520,9 +570,7 @@ class PredictiveHealthMonitor:
         if sensor_name == "vibration" and series.count >= 256:
             spectrum = self.vibration_analyzer.compute_spectrum(series.values[-256:])
             signature = self.vibration_analyzer.classify_fault(spectrum)
-            if signature and signature["fault_type"] not in {
-                "NO_CLASSIFIED_SIGNATURE",
-            }:
+            if signature and signature["fault_type"] != "NO_CLASSIFIED_SIGNATURE":
                 warnings.append(
                     FailurePrediction(
                         engine_id=engine_id,
@@ -545,8 +593,7 @@ class PredictiveHealthMonitor:
         return warnings
 
     def get_engine_predictions(self, engine_id: int) -> list[dict]:
-        if engine_id < 0:
-            raise ValueError("engine_id must be non-negative")
+        engine_id = self._engine_id(engine_id)
         recent = [
             prediction
             for prediction in self._predictions[-50:]
