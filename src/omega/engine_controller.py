@@ -1,15 +1,26 @@
-"""Engine controller — manages engine state machine, throttle profiles, and shutdown logic.
+"""Repository-local multi-unit state-transition simulator.
 
-Coordinates multi-engine operations for Falcon 9 (9 engines) or Starship (33 engines).
-Implements engine-out capability and graceful degradation.
+The historical ``EngineController`` name is preserved for compatibility. All
+start, throttle, shutdown, and emergency-stop operations mutate in-memory state
+only; this module has no flight-hardware, engine-command, or SpaceX authority.
 """
 
-import time
-from dataclasses import dataclass, field
-from enum import Enum, auto
-from typing import Optional, Callable
+from __future__ import annotations
 
-from alpha.raptor_health import RaptorHealthMonitor, HealthState, SensorReading, SensorKind
+import math
+import time
+from dataclasses import dataclass
+from enum import Enum, auto
+from typing import Callable, Optional
+
+from alpha.raptor_health import (
+    EVIDENCE_STATE,
+    EngineConfig,
+    HealthState,
+    RaptorHealthMonitor,
+    SensorKind,
+    SensorReading,
+)
 
 
 class EngineMode(Enum):
@@ -33,155 +44,290 @@ class EngineState:
     shutdown_reason: str = ""
 
 
-@dataclass
+@dataclass(frozen=True)
 class ThrottleProfile:
     name: str
     points: list[tuple[float, float]]
 
-    def get_throttle(self, t: float) -> float:
+    def validate(self) -> None:
+        if not self.name:
+            raise ValueError("profile name required")
         if not self.points:
-            return 100.0
-        if t <= self.points[0][0]:
+            raise ValueError("profile requires at least one throttle point")
+        previous_time = -math.inf
+        for timestamp, throttle in self.points:
+            if not math.isfinite(timestamp) or timestamp < 0:
+                raise ValueError("profile times must be finite and non-negative")
+            if timestamp < previous_time:
+                raise ValueError("profile times must be ordered")
+            if not math.isfinite(throttle) or not 0 <= throttle <= 100:
+                raise ValueError("profile throttle must be in 0..100")
+            previous_time = timestamp
+
+    def get_throttle(self, elapsed_s: float) -> float:
+        self.validate()
+        if not math.isfinite(elapsed_s) or elapsed_s < 0:
+            raise ValueError("elapsed_s must be finite and non-negative")
+        if elapsed_s <= self.points[0][0]:
             return self.points[0][1]
-        if t >= self.points[-1][0]:
+        if elapsed_s >= self.points[-1][0]:
             return self.points[-1][1]
 
-        for i in range(len(self.points) - 1):
-            t0, v0 = self.points[i]
-            t1, v1 = self.points[i + 1]
-            if t0 <= t <= t1:
-                frac = (t - t0) / (t1 - t0) if t1 != t0 else 0
-                return v0 + frac * (v1 - v0)
-        return 100.0
+        for index in range(len(self.points) - 1):
+            t0, v0 = self.points[index]
+            t1, v1 = self.points[index + 1]
+            if t0 <= elapsed_s <= t1:
+                fraction = (elapsed_s - t0) / (t1 - t0) if t1 != t0 else 0.0
+                return v0 + fraction * (v1 - v0)
+        return self.points[-1][1]
 
 
 class EngineController:
-    def __init__(self, engine_count: int = 9, config=None):
+    """In-memory simulated engine-state coordinator; no external side effects."""
+
+    _EVENT_HISTORY = 200
+
+    def __init__(self, engine_count: int = 9, config: Optional[EngineConfig] = None):
+        if (
+            isinstance(engine_count, bool)
+            or not isinstance(engine_count, int)
+            or engine_count <= 0
+        ):
+            raise ValueError("engine_count must be a positive non-boolean integer")
         self.engine_count = engine_count
         self.health_monitor = RaptorHealthMonitor(config)
         self._engines: dict[int, EngineState] = {
-            i: EngineState(engine_id=i) for i in range(engine_count)
+            engine_id: EngineState(engine_id=engine_id)
+            for engine_id in range(engine_count)
         }
         self._profiles: dict[str, ThrottleProfile] = {}
         self._active_profile: Optional[str] = None
-        self._mission_start: float = 0.0
-        self._shutdown_callbacks: list[Callable] = []
+        self._simulation_start: float = 0.0
+        self._shutdown_callbacks: list[Callable[[dict], None]] = []
+        self._callback_failures = 0
         self._event_log: list[dict] = []
 
-    def add_profile(self, profile: ThrottleProfile):
+    def _require_engine_id(self, engine_id: object) -> int:
+        if isinstance(engine_id, bool) or not isinstance(engine_id, int):
+            raise ValueError("engine_id must be a non-boolean integer")
+        if engine_id not in self._engines:
+            raise ValueError("engine_id is outside the simulated fleet")
+        return engine_id
+
+    def add_profile(self, profile: ThrottleProfile) -> None:
+        profile.validate()
         self._profiles[profile.name] = profile
 
-    def on_shutdown(self, callback: Callable):
+    def on_shutdown(self, callback: Callable[[dict], None]) -> None:
         self._shutdown_callbacks.append(callback)
 
+    def _notify_shutdown(self, payload: dict) -> None:
+        for callback in self._shutdown_callbacks:
+            try:
+                callback(payload)
+            except Exception:
+                self._callback_failures += 1
+
     def start_engines(self) -> dict:
-        if self._mission_start == 0:
-            self._mission_start = time.time()
+        if self._simulation_start == 0:
+            self._simulation_start = time.monotonic()
 
-        for eid, state in self._engines.items():
+        for engine_id, state in self._engines.items():
             state.mode = EngineMode.STARTUP
-            state.start_time = time.time()
-            self._log(f"engine_{eid}_startup")
+            state.start_time = time.monotonic()
+            self._log(f"unit_{engine_id}_startup")
 
-        return {"action": "STARTUP", "engines": self.engine_count}
+        return {
+            "action": "SIMULATED_STARTUP",
+            "engines": self.engine_count,
+            "evidence_state": EVIDENCE_STATE,
+        }
 
     def set_throttle(self, engine_id: int, percent: float) -> bool:
-        state = self._engines.get(engine_id)
-        if not state or state.mode in (EngineMode.OFF, EngineMode.SHUTDOWN):
+        if not math.isfinite(percent) or not 0 <= percent <= 100:
+            raise ValueError("simulated throttle must be finite and in 0..100")
+        engine_id = self._require_engine_id(engine_id)
+        state = self._engines[engine_id]
+        if state.mode in (
+            EngineMode.OFF,
+            EngineMode.SHUTDOWN,
+            EngineMode.EMERGENCY_STOP,
+        ):
             return False
 
-        percent = max(0, min(100, percent))
         state.throttle_percent = percent
-
         if percent < 40:
             state.mode = EngineMode.THROTTLE_DOWN
-        elif state.mode in (EngineMode.THROTTLE_DOWN, EngineMode.STARTUP, EngineMode.IDLE):
+        elif state.mode in (
+            EngineMode.THROTTLE_DOWN,
+            EngineMode.STARTUP,
+            EngineMode.IDLE,
+        ):
             state.mode = EngineMode.NOMINAL
-
         return True
 
-    def apply_profile(self, profile_name: str, mission_time: float) -> dict:
+    def apply_profile(self, profile_name: str, elapsed_s: float) -> dict:
         profile = self._profiles.get(profile_name)
-        if not profile:
-            return {"error": f"profile {profile_name} not found"}
+        if profile is None:
+            return {
+                "error": f"profile {profile_name} not found",
+                "evidence_state": EVIDENCE_STATE,
+            }
 
-        throttle = profile.get_throttle(mission_time)
+        throttle = profile.get_throttle(elapsed_s)
+        self._active_profile = profile_name
         results = []
+        for engine_id in self._engines:
+            if self.set_throttle(engine_id, throttle):
+                results.append({"engine": engine_id, "throttle": throttle})
 
-        for eid, state in self._engines.items():
-            if state.mode in (EngineMode.OFF, EngineMode.SHUTDOWN):
-                continue
-            state.throttle_percent = throttle
-            results.append({"engine": eid, "throttle": throttle})
-
-        return {"profile": profile_name, "throttle": throttle, "engines": results}
+        return {
+            "profile": profile_name,
+            "throttle": throttle,
+            "engines": results,
+            "evidence_state": EVIDENCE_STATE,
+        }
 
     def shutdown_engine(self, engine_id: int, reason: str = "manual") -> bool:
-        state = self._engines.get(engine_id)
-        if not state or state.mode == EngineMode.OFF:
+        engine_id = self._require_engine_id(engine_id)
+        state = self._engines[engine_id]
+        if state.mode in (
+            EngineMode.OFF,
+            EngineMode.SHUTDOWN,
+            EngineMode.EMERGENCY_STOP,
+        ):
             return False
 
         state.mode = EngineMode.SHUTDOWN
         state.throttle_percent = 0.0
-        state.shutdown_reason = reason
-        self._log(f"engine_{engine_id}_shutdown: {reason}")
-
-        for cb in self._shutdown_callbacks:
-            cb({"engine_id": engine_id, "reason": reason})
-
+        state.shutdown_reason = str(reason)
+        self._log(f"unit_{engine_id}_shutdown")
+        self._notify_shutdown(
+            {
+                "engine_id": engine_id,
+                "reason": str(reason),
+                "mode": EngineMode.SHUTDOWN.name,
+                "evidence_state": EVIDENCE_STATE,
+            }
+        )
         return True
 
-    def emergency_stop(self, reason: str = "auto") -> dict:
+    def emergency_stop(self, reason: str = "local simulation") -> dict:
         stopped = []
-        for eid in range(self.engine_count):
-            state = self._engines[eid]
-            if state.mode != EngineMode.OFF:
-                state.mode = EngineMode.EMERGENCY_STOP
-                state.throttle_percent = 0.0
-                state.shutdown_reason = reason
-                stopped.append(eid)
-                self._log(f"engine_{eid}_EMERGENCY_STOP: {reason}")
+        terminal_modes = {
+            EngineMode.OFF,
+            EngineMode.SHUTDOWN,
+            EngineMode.EMERGENCY_STOP,
+        }
+        for engine_id in range(self.engine_count):
+            state = self._engines[engine_id]
+            if state.mode in terminal_modes:
+                continue
+            state.mode = EngineMode.EMERGENCY_STOP
+            state.throttle_percent = 0.0
+            state.shutdown_reason = str(reason)
+            stopped.append(engine_id)
+            self._log(f"unit_{engine_id}_emergency_stop")
+            self._notify_shutdown(
+                {
+                    "engine_id": engine_id,
+                    "reason": str(reason),
+                    "mode": EngineMode.EMERGENCY_STOP.name,
+                    "evidence_state": EVIDENCE_STATE,
+                }
+            )
 
-        return {"action": "EMERGENCY_STOP", "stopped": stopped, "reason": reason}
+        return {
+            "action": "SIMULATED_EMERGENCY_STOP",
+            "stopped": stopped,
+            "reason": str(reason),
+            "evidence_state": EVIDENCE_STATE,
+        }
 
-    def process_telemetry(self, sensor_id: int, kind: SensorKind, value: float):
-        reading = SensorReading(kind=kind, value=value, timestamp=time.time(), engine_id=sensor_id)
+    def process_telemetry(
+        self,
+        engine_id: int,
+        kind: SensorKind,
+        value: float,
+        *,
+        timestamp: Optional[float] = None,
+    ) -> Optional[dict]:
+        """Process one local sample in a single Unix wall-clock time domain.
+
+        ``timestamp`` is seconds since the Unix epoch. When omitted, ``time.time``
+        supplies the timestamp. Explicit and implicit samples for the same
+        engine/sensor pair must therefore be nondecreasing in the same domain.
+        """
+        engine_id = self._require_engine_id(engine_id)
+        sample_time = time.time() if timestamp is None else timestamp
+        reading = SensorReading(
+            kind=kind,
+            value=value,
+            timestamp=sample_time,
+            engine_id=engine_id,
+        )
         anomaly = self.health_monitor.ingest(reading)
 
-        if anomaly and anomaly.severity == "CRITICAL":
-            state = self._engines.get(sensor_id)
-            if state and state.mode != EngineMode.OFF:
-                self.shutdown_engine(sensor_id, f"critical: {anomaly.sensor.name}")
+        if anomaly is not None and anomaly.severity == "CRITICAL":
+            state = self._engines[engine_id]
+            if state.mode not in (
+                EngineMode.OFF,
+                EngineMode.SHUTDOWN,
+                EngineMode.EMERGENCY_STOP,
+            ):
+                self.shutdown_engine(engine_id, f"critical:{anomaly.sensor.name}")
 
-        state = self._engines.get(sensor_id)
-        if state:
-            state.health = self.health_monitor.state
+        self._engines[engine_id].health = self.health_monitor.state_for(engine_id)
+        if anomaly is None:
+            return None
+        return {
+            "engine_id": anomaly.engine_id,
+            "sensor": anomaly.sensor.name,
+            "severity": anomaly.severity,
+            "evidence_state": EVIDENCE_STATE,
+        }
 
     def get_vehicle_status(self) -> dict:
-        modes = {}
+        modes: dict[str, int] = {}
         total_throttle = 0.0
         active_count = 0
 
-        for eid, state in self._engines.items():
+        for state in self._engines.values():
             modes[state.mode.name] = modes.get(state.mode.name, 0) + 1
-            if state.mode not in (EngineMode.OFF, EngineMode.SHUTDOWN):
+            if state.mode not in (
+                EngineMode.OFF,
+                EngineMode.SHUTDOWN,
+                EngineMode.EMERGENCY_STOP,
+            ):
                 total_throttle += state.throttle_percent
                 active_count += 1
 
-        avg_throttle = total_throttle / active_count if active_count > 0 else 0
-
+        average_throttle = total_throttle / active_count if active_count else 0.0
+        elapsed = (
+            time.monotonic() - self._simulation_start
+            if self._simulation_start
+            else 0.0
+        )
         return {
             "engines_total": self.engine_count,
             "engines_active": active_count,
             "mode_distribution": modes,
-            "average_throttle": round(avg_throttle, 1),
-            "mission_time": round(time.time() - self._mission_start, 1) if self._mission_start else 0,
+            "average_throttle": round(average_throttle, 1),
+            "simulation_time": round(elapsed, 3),
             "health_state": self.health_monitor.state.name,
+            "active_profile": self._active_profile,
+            "evidence_state": EVIDENCE_STATE,
         }
 
-    def _log(self, event: str):
+    def _log(self, event: str) -> None:
         self._event_log.append({"time": time.time(), "event": event})
+        if len(self._event_log) > self._EVENT_HISTORY:
+            del self._event_log[:-self._EVENT_HISTORY]
 
     @property
     def event_log(self) -> list[dict]:
         return list(self._event_log)
+
+    @property
+    def callback_failures(self) -> int:
+        return self._callback_failures

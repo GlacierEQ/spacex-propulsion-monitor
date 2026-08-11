@@ -1,0 +1,43 @@
+name: Public Health Simulation Truth Gate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.13"]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
+      - name: Verify exact source identity
+        shell: bash
+        run: |
+          expected="${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}"
+          test "$(git rev-parse HEAD)" = "$expected"
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git cat-file -e "${{ github.event.pull_request.base.sha }}^{commit}"
+            git merge-base --is-ancestor "${{ github.event.pull_request.base.sha }}" HEAD
+          fi
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          check-latest: false
+
+      - name: Verify local multi-sensor health boundary
+        shell: bash
+        run: bash scripts/ci/verify.sh
