@@ -1,1 +1,15 @@
-{"capabilities": ["hyper-scaling"]}
+{
+  "schema": "glaciereq.repository-capabilities.v1",
+  "evidence_token": "LOCAL_PROPULSION_HEALTH_SIMULATION_NOT_FLIGHT_ENGINE_AUTHORITY",
+  "capabilities": [
+    "bounded-synthetic-health-indexing",
+    "per-unit-multi-sensor-windowing",
+    "threshold-and-outlier-detection",
+    "local-state-transition-simulation",
+    "heuristic-threshold-trend-projection",
+    "cross-sensor-correlation",
+    "simple-degradation-curve-fitting",
+    "dependency-free-vibration-spectrum-analysis",
+    "local-python-verification"
+  ]
+}
