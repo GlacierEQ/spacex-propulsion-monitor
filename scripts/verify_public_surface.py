@@ -5,6 +5,17 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 TOKEN = "LOCAL_PROPULSION_HEALTH_SIMULATION_NOT_FLIGHT_ENGINE_AUTHORITY"
+APPROVED_CAPABILITIES = [
+    "bounded-synthetic-health-indexing",
+    "per-unit-multi-sensor-windowing",
+    "threshold-and-outlier-detection",
+    "local-state-transition-simulation",
+    "heuristic-threshold-trend-projection",
+    "cross-sensor-correlation",
+    "simple-degradation-curve-fitting",
+    "dependency-free-vibration-spectrum-analysis",
+    "local-python-verification",
+]
 
 
 def read(path: str) -> str:
@@ -39,7 +50,7 @@ def main() -> None:
     assert "illustrative_threshold_horizon_not_rul" in predictive
     assert "SIMULATED_STARTUP" in controller
     assert "SIMULATED_EMERGENCY_STOP" in controller
-    assert "hyper-scaling" not in capabilities["capabilities"]
+    assert capabilities["capabilities"] == APPROVED_CAPABILITIES
     assert capabilities["evidence_token"] == TOKEN
     assert target["evidence_token"] == TOKEN
     assert target["current"]["deployed"] is False
