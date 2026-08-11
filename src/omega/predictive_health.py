@@ -1,14 +1,16 @@
 """Repository-local diagnostic heuristics for synthetic sensor series.
 
-This module contains reusable trend projection, correlation, degradation-fit,
-and vibration-spectrum mechanisms. Outputs are heuristic scores and threshold
-projection horizons, not validated failure probabilities, remaining-useful-life
-predictions, Raptor/Merlin models, or flight-control signals.
+This module contains reusable trend projection, timestamp-aligned correlation,
+degradation-fit, and bounded vibration-spectrum mechanisms. Outputs are
+heuristic scores and threshold projection horizons, not validated failure
+probabilities, remaining-useful-life predictions, Raptor/Merlin models, or
+flight-control signals.
 """
 
 from __future__ import annotations
 
 import math
+from collections import deque
 from dataclasses import dataclass, field
 from typing import Optional
 
@@ -21,6 +23,14 @@ def _finite(value: float, label: str) -> float:
     return value
 
 
+def _engine_id(engine_id: object) -> int:
+    if isinstance(engine_id, bool) or not isinstance(engine_id, int):
+        raise ValueError("engine_id must be a non-boolean integer")
+    if engine_id < 0:
+        raise ValueError("engine_id must be non-negative")
+    return engine_id
+
+
 @dataclass
 class SensorTimeSeries:
     sensor_name: str
@@ -31,10 +41,7 @@ class SensorTimeSeries:
     def append(self, value: float, timestamp: float) -> None:
         if not self.sensor_name:
             raise ValueError("sensor_name required")
-        if isinstance(self.engine_id, bool) or not isinstance(self.engine_id, int):
-            raise ValueError("engine_id must be a non-boolean integer")
-        if self.engine_id < 0:
-            raise ValueError("engine_id must be non-negative")
+        _engine_id(self.engine_id)
         _finite(value, "value")
         _finite(timestamp, "timestamp")
         if self.timestamps and timestamp < self.timestamps[-1]:
@@ -42,8 +49,8 @@ class SensorTimeSeries:
         self.values.append(value)
         self.timestamps.append(timestamp)
         if len(self.values) > 500:
-            self.values = self.values[-500:]
-            self.timestamps = self.timestamps[-500:]
+            del self.values[:-500]
+            del self.timestamps[:-500]
 
     @property
     def latest(self) -> float:
@@ -60,11 +67,11 @@ class SensorTimeSeries:
 
 @dataclass(frozen=True)
 class FailurePrediction:
-    """Compatibility record for a heuristic diagnostic warning.
+    """Compatibility record for one bounded local diagnostic warning.
 
-    ``confidence`` is a bounded heuristic score, not calibrated probability.
-    ``predicted_time_s`` is a projected threshold-crossing horizon. A value of
-    zero means the illustrative threshold is already violated.
+    ``confidence`` is a heuristic score, not calibrated probability.
+    ``predicted_time_s`` is a projected illustrative threshold horizon; zero
+    means the illustrative threshold is already violated.
     """
 
     engine_id: int
@@ -110,7 +117,6 @@ class TrendExtrapolator:
         slope = ss_tv / ss_tt
         intercept = value_mean - slope * time_mean
         current = values[-1]
-
         moving_toward = (direction == "above" and slope > 0) or (
             direction == "below" and slope < 0
         )
@@ -144,7 +150,7 @@ class TrendExtrapolator:
 
 
 class CrossSensorCorrelator:
-    """Compute bounded Pearson correlation on aligned local sample windows."""
+    """Compute Pearson correlation only across exact common timestamps."""
 
     def __init__(self, window_size: int = 50, correlation_threshold: float = 0.7):
         if window_size < 10:
@@ -160,16 +166,30 @@ class CrossSensorCorrelator:
             raise ValueError("sensor key required")
         self._series[key] = series
 
-    def compute_correlation(self, key_a: str, key_b: str) -> Optional[float]:
+    def _aligned_values(
+        self, key_a: str, key_b: str
+    ) -> Optional[tuple[list[float], list[float]]]:
         if key_a not in self._series or key_b not in self._series:
             return None
         left = self._series[key_a]
         right = self._series[key_b]
-        n = min(left.count, right.count, self.window_size)
-        if n < 10:
+        left_map = dict(zip(left.timestamps[-self.window_size :], left.values[-self.window_size :]))
+        right_map = dict(zip(right.timestamps[-self.window_size :], right.values[-self.window_size :]))
+        common = sorted(set(left_map) & set(right_map))
+        if len(common) < 10:
             return None
-        left_values = left.values[-n:]
-        right_values = right.values[-n:]
+        common = common[-self.window_size :]
+        return (
+            [left_map[timestamp] for timestamp in common],
+            [right_map[timestamp] for timestamp in common],
+        )
+
+    def compute_correlation(self, key_a: str, key_b: str) -> Optional[float]:
+        aligned = self._aligned_values(key_a, key_b)
+        if aligned is None:
+            return None
+        left_values, right_values = aligned
+        n = len(left_values)
         left_mean = sum(left_values) / n
         right_mean = sum(right_values) / n
         left_dev = [value - left_mean for value in left_values]
@@ -181,39 +201,55 @@ class CrossSensorCorrelator:
         right_var = sum(value**2 for value in right_dev) / n
         if left_var < 1e-15 or right_var < 1e-15:
             return None
-        return max(
-            -1.0,
-            min(1.0, covariance / math.sqrt(left_var * right_var)),
-        )
+        return max(-1.0, min(1.0, covariance / math.sqrt(left_var * right_var)))
+
+    def _pair_anomaly(self, key_a: str, key_b: str) -> Optional[dict]:
+        correlation = self.compute_correlation(key_a, key_b)
+        if correlation is None or abs(correlation) <= self.correlation_threshold:
+            return None
+        aligned = self._aligned_values(key_a, key_b)
+        if aligned is None:
+            return None
+        left_values, right_values = aligned
+        left_mean = sum(left_values) / len(left_values)
+        right_mean = sum(right_values) / len(right_values)
+        left_scale = max(abs(left_mean), 1e-10)
+        right_scale = max(abs(right_mean), 1e-10)
+        left_deviation = abs(left_values[-1] - left_mean) / left_scale
+        right_deviation = abs(right_values[-1] - right_mean) / right_scale
+        # Both channels must presently deviate; correlation alone is not anomaly evidence.
+        if left_deviation <= 0.1 or right_deviation <= 0.1:
+            return None
+        return {
+            "sensor_a": key_a,
+            "sensor_b": key_b,
+            "correlation": correlation,
+            "a_deviation": left_deviation,
+            "b_deviation": right_deviation,
+            "evidence_state": EVIDENCE_STATE,
+        }
 
     def detect_correlated_anomalies(self) -> list[dict]:
         anomalies: list[dict] = []
         keys = sorted(self._series)
-        for left_index in range(len(keys)):
-            for right_index in range(left_index + 1, len(keys)):
-                key_a = keys[left_index]
-                key_b = keys[right_index]
-                correlation = self.compute_correlation(key_a, key_b)
-                if correlation is None or abs(correlation) <= self.correlation_threshold:
-                    continue
-                left = self._series[key_a]
-                right = self._series[key_b]
-                left_scale = max(abs(left.mean), 1e-10)
-                right_scale = max(abs(right.mean), 1e-10)
-                left_deviation = abs(left.latest - left.mean) / left_scale
-                right_deviation = abs(right.latest - right.mean) / right_scale
-                if left_deviation <= 0.1 and right_deviation <= 0.1:
-                    continue
-                anomalies.append(
-                    {
-                        "sensor_a": key_a,
-                        "sensor_b": key_b,
-                        "correlation": correlation,
-                        "a_deviation": left_deviation,
-                        "b_deviation": right_deviation,
-                        "evidence_state": EVIDENCE_STATE,
-                    }
-                )
+        for left_index, key_a in enumerate(keys):
+            for key_b in keys[left_index + 1 :]:
+                anomaly = self._pair_anomaly(key_a, key_b)
+                if anomaly is not None:
+                    anomalies.append(anomaly)
+        return anomalies
+
+    def detect_correlated_anomalies_for(self, key: str) -> list[dict]:
+        if key not in self._series:
+            return []
+        anomalies: list[dict] = []
+        for other in sorted(self._series):
+            if other == key:
+                continue
+            key_a, key_b = sorted((key, other))
+            anomaly = self._pair_anomaly(key_a, key_b)
+            if anomaly is not None:
+                anomalies.append(anomaly)
         return anomalies
 
 
@@ -224,22 +260,20 @@ class DegradationModel:
         self._models: dict[str, dict] = {}
 
     def fit_bearing_wear(self, sensor_key: str, vibration_data: list[float]) -> dict:
-        if len(vibration_data) < 20:
-            return {"fitted": False, "evidence_state": EVIDENCE_STATE}
         if any(not math.isfinite(value) or value < 0 for value in vibration_data):
             raise ValueError("vibration samples must be finite and non-negative")
+        if len(vibration_data) < 20:
+            return {"fitted": False, "evidence_state": EVIDENCE_STATE}
         n = len(vibration_data)
         times = list(range(n))
         time_mean = sum(times) / n
         value_mean = sum(vibration_data) / n
         ss_tt = sum((timestamp - time_mean) ** 2 for timestamp in times)
-        if ss_tt < 1e-15:
-            return {"fitted": False, "evidence_state": EVIDENCE_STATE}
         ss_tv = sum(
             (times[index] - time_mean) * (vibration_data[index] - value_mean)
             for index in range(n)
         )
-        slope = ss_tv / ss_tt
+        slope = ss_tv / ss_tt if ss_tt > 0 else 0.0
         intercept = value_mean - slope * time_mean
         fixture_threshold = max(value_mean * 3.0, 1e-10)
         horizon = (
@@ -274,25 +308,21 @@ class DegradationModel:
         }
 
     def fit_turbine_erosion(self, sensor_key: str, efficiency_data: list[float]) -> dict:
+        if any(not math.isfinite(value) or value <= 0 for value in efficiency_data):
+            raise ValueError("efficiency samples must be finite and positive")
         if len(efficiency_data) < 20:
             return {"fitted": False, "evidence_state": EVIDENCE_STATE}
-        if any(
-            not math.isfinite(value) or value <= 0 for value in efficiency_data
-        ):
-            raise ValueError("efficiency samples must be finite and positive")
         n = len(efficiency_data)
         times = list(range(n))
         log_values = [math.log(value) for value in efficiency_data]
         time_mean = sum(times) / n
         log_mean = sum(log_values) / n
         ss_tt = sum((timestamp - time_mean) ** 2 for timestamp in times)
-        if ss_tt < 1e-15:
-            return {"fitted": False, "evidence_state": EVIDENCE_STATE}
         ss_te = sum(
             (times[index] - time_mean) * (log_values[index] - log_mean)
             for index in range(n)
         )
-        decay_rate = ss_te / ss_tt
+        decay_rate = ss_te / ss_tt if ss_tt > 0 else 0.0
         fixture_threshold = 0.7
         current = efficiency_data[-1]
         if current <= fixture_threshold:
@@ -301,18 +331,19 @@ class DegradationModel:
             horizon = math.log(fixture_threshold / current) / decay_rate
         else:
             horizon = math.inf
-        self._models[sensor_key] = {
+        model = {
             "type": "exponential_efficiency_trend",
             "decay_rate": decay_rate,
             "fixture_threshold": fixture_threshold,
             "time_to_failure_samples": horizon,
             "semantics": "illustrative_threshold_horizon_not_rul",
         }
+        self._models[sensor_key] = model
         return {
             "fitted": True,
             "decay_rate": decay_rate,
             "time_to_failure_samples": horizon,
-            "semantics": "illustrative_threshold_horizon_not_rul",
+            "semantics": model["semantics"],
             "evidence_state": EVIDENCE_STATE,
         }
 
@@ -340,9 +371,11 @@ class VibrationSpectralAnalyzer:
                 "frequencies": [],
                 "magnitudes": [],
                 "peaks": [],
+                "total_energy": 0.0,
+                "dominant_frequency": 0.0,
                 "evidence_state": EVIDENCE_STATE,
             }
-        data = vibration_data[:n]
+        data = vibration_data[-n:]
         mean = sum(data) / n
         centered = [value - mean for value in data]
         magnitudes: list[float] = []
@@ -377,9 +410,7 @@ class VibrationSpectralAnalyzer:
                         "relative_strength": magnitude / maximum if maximum else 0.0,
                     }
                 )
-        dominant = (
-            frequencies[magnitudes.index(maximum)] if magnitudes and maximum else 0.0
-        )
+        dominant = frequencies[magnitudes.index(maximum)] if maximum else 0.0
         return {
             "frequencies": frequencies,
             "magnitudes": magnitudes,
@@ -432,26 +463,19 @@ class VibrationSpectralAnalyzer:
 
 
 class PredictiveHealthMonitor:
-    """Fuse local heuristics into bounded diagnostic warnings.
+    """Fuse bounded local heuristics into diagnostic warnings."""
 
-    Historical field names such as ``failure_mode`` are retained for API
-    compatibility. They are diagnostic labels, not validated failure forecasts.
-    """
+    _PREDICTION_HISTORY = 200
+    _SPECTRUM_STRIDE = 16
 
     def __init__(self):
         self.trend_extrapolator = TrendExtrapolator()
         self.correlator = CrossSensorCorrelator()
         self.degradation_model = DegradationModel()
         self.vibration_analyzer = VibrationSpectralAnalyzer()
-        self._predictions: list[FailurePrediction] = []
-
-    @staticmethod
-    def _engine_id(engine_id: object) -> int:
-        if isinstance(engine_id, bool) or not isinstance(engine_id, int):
-            raise ValueError("engine_id must be a non-boolean integer")
-        if engine_id < 0:
-            raise ValueError("engine_id must be non-negative")
-        return engine_id
+        self._predictions: deque[FailurePrediction] = deque(
+            maxlen=self._PREDICTION_HISTORY
+        )
 
     def _active_threshold_warning(
         self,
@@ -490,7 +514,7 @@ class PredictiveHealthMonitor:
         value: float,
         timestamp: float,
     ) -> list[FailurePrediction]:
-        engine_id = self._engine_id(engine_id)
+        engine_id = _engine_id(engine_id)
         if not sensor_name:
             raise ValueError("sensor_name required")
         _finite(value, "value")
@@ -527,9 +551,7 @@ class PredictiveHealthMonitor:
                 if threshold is None or series.count < 20:
                     continue
                 projection = self.trend_extrapolator.extrapolate_to_threshold(
-                    series,
-                    threshold,
-                    direction,
+                    series, threshold, direction
                 )
                 if projection is None or projection["time_to_threshold_s"] >= 120:
                     continue
@@ -550,9 +572,7 @@ class PredictiveHealthMonitor:
                     )
                 )
 
-        for correlation in self.correlator.detect_correlated_anomalies():
-            if key not in {correlation["sensor_a"], correlation["sensor_b"]}:
-                continue
+        for correlation in self.correlator.detect_correlated_anomalies_for(key):
             warnings.append(
                 FailurePrediction(
                     engine_id=engine_id,
@@ -561,13 +581,17 @@ class PredictiveHealthMonitor:
                     confidence=abs(correlation["correlation"]),
                     evidence=[
                         f"correlation={correlation['correlation']:.3f}",
-                        "heuristic correlation; not causal diagnosis",
+                        "timestamp-aligned heuristic correlation; not causal diagnosis",
                     ],
                     severity="WARNING",
                 )
             )
 
-        if sensor_name == "vibration" and series.count >= 256:
+        if (
+            sensor_name == "vibration"
+            and series.count >= 256
+            and series.count % self._SPECTRUM_STRIDE == 0
+        ):
             spectrum = self.vibration_analyzer.compute_spectrum(series.values[-256:])
             signature = self.vibration_analyzer.classify_fault(spectrum)
             if signature and signature["fault_type"] != "NO_CLASSIFIED_SIGNATURE":
@@ -593,10 +617,10 @@ class PredictiveHealthMonitor:
         return warnings
 
     def get_engine_predictions(self, engine_id: int) -> list[dict]:
-        engine_id = self._engine_id(engine_id)
+        engine_id = _engine_id(engine_id)
         recent = [
             prediction
-            for prediction in self._predictions[-50:]
+            for prediction in list(self._predictions)[-50:]
             if prediction.engine_id == engine_id
         ]
         return [
@@ -615,15 +639,13 @@ class PredictiveHealthMonitor:
     @property
     def active_warnings(self) -> int:
         return sum(
-            1
-            for prediction in self._predictions[-20:]
-            if prediction.severity == "WARNING"
+            prediction.severity == "WARNING"
+            for prediction in list(self._predictions)[-20:]
         )
 
     @property
     def active_criticals(self) -> int:
         return sum(
-            1
-            for prediction in self._predictions[-20:]
-            if prediction.severity == "CRITICAL"
+            prediction.severity == "CRITICAL"
+            for prediction in list(self._predictions)[-20:]
         )
