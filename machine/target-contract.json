@@ -5,18 +5,37 @@
     "family": "elite-estate"
   },
   "current": {
-    "state": "PROMOTED",
+    "state": "TESTED",
     "implemented": true,
     "tested": true,
     "deployed": false
   },
+  "verified_capability": "deterministic-local-multi-sensor-health-evaluation",
+  "evidence_token": "LOCAL_PROPULSION_HEALTH_SIMULATION_NOT_FLIGHT_ENGINE_AUTHORITY",
+  "admitted_paths": [
+    "src/prop_health.py",
+    "src/alpha/raptor_health.py",
+    "src/omega/engine_controller.py",
+    "src/omega/predictive_health.py",
+    "tests/",
+    "scripts/verify_public_surface.py"
+  ],
   "nonclaims": [
-    "no employer affiliation",
-    "no production deployment without receipt"
+    "no SpaceX affiliation or proprietary access",
+    "no real Raptor, Merlin, Falcon, Starship, test-stand, or flight telemetry",
+    "no engine-specific specification authority",
+    "no calibrated failure probability, validated remaining useful life, or certified diagnosis",
+    "no real throttle, shutdown, abort, thrust-redistribution, or flight-computer command authority",
+    "no live MCP, provider, APEX, AKOS, Mastermind, or agent-mesh integration",
+    "no production scale, deployment, flight readiness, or safety certification"
   ],
   "donor_plan": {
-    "mode": "none",
-    "donors": []
-  },
-  "frozen_at": "2026-08-10T04:12Z"
+    "mode": "bounded-capability-donor",
+    "donors": [
+      "per-unit-multi-sensor-health-evaluation",
+      "heuristic-threshold-trend-projection",
+      "cross-sensor-correlation",
+      "dependency-free-vibration-spectrum-analysis"
+    ]
+  }
 }
