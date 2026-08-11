@@ -34,6 +34,14 @@ class SensorKind(Enum):
     GIMBAL_ANGLE = auto()
 
 
+def _validate_engine_id(engine_id: object) -> int:
+    if isinstance(engine_id, bool) or not isinstance(engine_id, int):
+        raise ValueError("engine_id must be a non-boolean integer")
+    if engine_id < 0:
+        raise ValueError("engine_id must be non-negative")
+    return engine_id
+
+
 @dataclass(frozen=True)
 class EngineConfig:
     """Illustrative local fixture thresholds, not vehicle specifications."""
@@ -77,8 +85,7 @@ class SensorReading:
             raise ValueError("sensor value must be finite")
         if not math.isfinite(self.timestamp):
             raise ValueError("sensor timestamp must be finite")
-        if self.engine_id < 0:
-            raise ValueError("engine_id must be non-negative")
+        _validate_engine_id(self.engine_id)
 
 
 class SensorWindow:
@@ -169,12 +176,14 @@ class EquipmentHealthMonitor:
         HealthState.CRITICAL: 2,
         HealthState.OFFLINE: 3,
     }
+    _HEALTH_WINDOW = 10
 
     def __init__(self, config: Optional[EngineConfig] = None):
         self.config = config or EngineConfig()
         self.config.validate()
         self._windows: dict[tuple[int, SensorKind], SensorWindow] = {}
         self._anomalies: list[AnomalyEvent] = []
+        self._recent_health: dict[int, list[HealthState]] = {}
         self._engine_states: dict[int, HealthState] = {}
         self._anomaly_callbacks: list[Callable[[AnomalyEvent], None]] = []
         self._callback_failures = 0
@@ -216,11 +225,23 @@ class EquipmentHealthMonitor:
 
         if anomaly is not None:
             self._anomalies.append(anomaly)
-            self._update_state(reading.engine_id)
+            sample_state = (
+                HealthState.CRITICAL
+                if anomaly.severity == "CRITICAL"
+                else HealthState.DEGRADED
+            )
+            self._record_health(reading.engine_id, sample_state)
             self._notify_anomaly(anomaly)
         else:
-            self._engine_states.setdefault(reading.engine_id, HealthState.NOMINAL)
+            self._record_health(reading.engine_id, HealthState.NOMINAL)
         return anomaly
+
+    def _record_health(self, engine_id: int, sample_state: HealthState) -> None:
+        history = self._recent_health.setdefault(engine_id, [])
+        history.append(sample_state)
+        if len(history) > self._HEALTH_WINDOW:
+            del history[:-self._HEALTH_WINDOW]
+        self._update_state(engine_id)
 
     def _check_threshold(self, reading: SensorReading) -> Optional[AnomalyEvent]:
         config = self.config
@@ -251,26 +272,23 @@ class EquipmentHealthMonitor:
         )
 
     def _update_state(self, engine_id: int) -> None:
-        recent = [
-            anomaly
-            for anomaly in self._anomalies
-            if anomaly.engine_id == engine_id
-        ][-10:]
-        critical = sum(1 for anomaly in recent if anomaly.severity == "CRITICAL")
+        history = self._recent_health.get(engine_id, [])[-self._HEALTH_WINDOW :]
+        critical = sum(state == HealthState.CRITICAL for state in history)
+        degraded = sum(state == HealthState.DEGRADED for state in history)
         if critical >= 3:
             state = HealthState.CRITICAL
-        elif critical >= 1 or len(recent) >= 5:
+        elif critical >= 1 or degraded >= 5:
             state = HealthState.DEGRADED
         else:
             state = HealthState.NOMINAL
         self._engine_states[engine_id] = state
 
     def state_for(self, engine_id: int) -> HealthState:
+        engine_id = _validate_engine_id(engine_id)
         return self._engine_states.get(engine_id, HealthState.NOMINAL)
 
     def get_engine_health(self, engine_id: int) -> dict:
-        if engine_id < 0:
-            raise ValueError("engine_id must be non-negative")
+        engine_id = _validate_engine_id(engine_id)
         sensors: dict[str, dict] = {}
         for (sample_engine_id, kind), window in self._windows.items():
             if sample_engine_id != engine_id:
