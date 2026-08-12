@@ -54,6 +54,6 @@ That gate compiles source, runs deterministic/adversarial tests, builds and inst
 
 ## Evidence boundary
 
-This repository does **not** claim SpaceX affiliation, proprietary or flight telemetry, engine-specific specification authority, calibrated failure probability, validated remaining useful life, certified diagnosis, real throttle/shutdown/abort authority, production deployment, flight readiness, safety certification, or production-scale performance.
+This repository does **not** claim SpaceX affiliation, proprietary or flight telemetry, engine-specific specification authority, calibrated failure probability, validated remaining useful life, certified diagnosis, real throttle/shutdown/abort authority, **flight-computer command authority**, production deployment, flight readiness, safety certification, or production-scale performance.
 
 Any future claim above this ceiling requires new source, calibrated/independent evidence where applicable, deterministic tests, exact-head receipts, and a new authority admission.

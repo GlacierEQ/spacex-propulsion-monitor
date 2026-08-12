@@ -11,8 +11,9 @@
     "cross-sensor-correlation",
     "simple-degradation-curve-fitting",
     "dependency-free-vibration-spectrum-analysis",
+    "local-python-verification",
     "installable-local-library-and-cli",
     "direct-operability-and-public-truth-verification"
   ],
-  "terminal_status_requires": "exact-head package, test, runtime, and public-truth verification"
+  "terminal_status_requires": "exact-head package, behavior, runtime, manifest, and public-truth verification plus a source-bound completion receipt"
 }

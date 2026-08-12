@@ -12,6 +12,7 @@
     "deployed": false,
     "naturally_deployable": false
   },
+  "verified_capability": "deterministic-local-multi-sensor-health-evaluation",
   "evidence_token": "LOCAL_PROPULSION_HEALTH_SIMULATION_NOT_FLIGHT_ENGINE_AUTHORITY",
   "completion_rule": "CRYSTALLIZED only after the exact canonicalized head builds an installable wheel, passes the complete behavioral/adversarial test suite, executes the installed CLI and direct operability surface, preserves the public truth boundary, and proves an empty material gap matrix.",
   "nonclaims": [
