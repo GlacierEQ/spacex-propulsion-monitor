@@ -1,0 +1,10 @@
+{
+  "schema": "glaciereq.crystallization-purpose.v1",
+  "repository": "GlacierEQ/spacex-propulsion-monitor",
+  "canonical_purpose": "Provide an independent, deterministic local software laboratory for multi-sensor equipment-health scoring, anomaly evaluation, simulated state transitions, and bounded diagnostic heuristics over caller-supplied synthetic/local telemetry.",
+  "consumer": "Developers and reviewers evaluating reusable equipment-health software mechanisms without external hardware authority.",
+  "natural_runtime": "installable local Python library and CLI",
+  "naturally_deployable": false,
+  "deployment_reason": "The intended product is a local/reference health laboratory. A hosted or physical-control deployment would add authority and integration claims outside the verified purpose.",
+  "evidence_state": "LOCAL_PROPULSION_HEALTH_SIMULATION_NOT_FLIGHT_ENGINE_AUTHORITY"
+}

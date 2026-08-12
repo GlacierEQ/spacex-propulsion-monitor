@@ -1,0 +1,15 @@
+{
+  "schema": "glaciereq.crystallization-capabilities.v1",
+  "capabilities": [
+    {"id":"bounded_health_index","state":"WORKING","implementation_paths":["src/prop_health.py"],"verification":["tests/"]},
+    {"id":"per_unit_multi_sensor_windowing","state":"WORKING","implementation_paths":["src/alpha/raptor_health.py"],"verification":["tests/"]},
+    {"id":"threshold_and_outlier_detection","state":"WORKING","implementation_paths":["src/alpha/raptor_health.py"],"verification":["tests/"]},
+    {"id":"simulated_state_transitions","state":"WORKING","implementation_paths":["src/omega/engine_controller.py"],"verification":["tests/"]},
+    {"id":"trend_projection","state":"WORKING","implementation_paths":["src/omega/predictive_health.py"],"verification":["tests/"]},
+    {"id":"cross_sensor_correlation","state":"WORKING","implementation_paths":["src/omega/predictive_health.py"],"verification":["tests/"]},
+    {"id":"degradation_curve_fitting","state":"WORKING","implementation_paths":["src/omega/predictive_health.py"],"verification":["tests/"]},
+    {"id":"vibration_spectrum_analysis","state":"WORKING","implementation_paths":["src/omega/predictive_health.py"],"verification":["tests/"]},
+    {"id":"installable_library_and_cli","state":"WORKING","implementation_paths":["pyproject.toml","src/health_lab_cli.py"],"verification":["scripts/ci/verify.sh","tests/test_installable_health_lab.py"]},
+    {"id":"direct_operability_and_truth_boundary","state":"WORKING","implementation_paths":["scripts/operate.py","scripts/verify_public_surface.py"],"verification":["scripts/ci/verify.sh"]}
+  ]
+}

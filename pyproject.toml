@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=75", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "glaciereq-local-health-lab"
+version = "1.0.0"
+description = "Independent local multi-sensor equipment-health simulation and diagnostic laboratory"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.scripts]
+health-lab-demo = "health_lab_cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+py-modules = ["prop_health", "promotion_authority", "health_lab_cli"]
+packages = ["alpha", "omega"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
