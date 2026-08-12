@@ -1,41 +1,25 @@
 {
-  "schema": "glaciereq.repo-target-contract.v1",
+  "schema": "glaciereq.repo-target-contract.v2",
   "identity": {
     "repository_id": "GlacierEQ/spacex-propulsion-monitor",
-    "family": "elite-estate"
+    "purpose": "independent local multi-sensor equipment-health simulation and diagnostic laboratory"
   },
   "current": {
-    "state": "TESTED",
+    "state": "FUNCTIONAL_CRYSTALLIZATION_CANDIDATE",
     "implemented": true,
-    "tested": true,
-    "deployed": false
+    "tested_parent_head": true,
+    "terminal_current_head_verified": false,
+    "deployed": false,
+    "naturally_deployable": false
   },
   "verified_capability": "deterministic-local-multi-sensor-health-evaluation",
   "evidence_token": "LOCAL_PROPULSION_HEALTH_SIMULATION_NOT_FLIGHT_ENGINE_AUTHORITY",
-  "admitted_paths": [
-    "src/prop_health.py",
-    "src/alpha/raptor_health.py",
-    "src/omega/engine_controller.py",
-    "src/omega/predictive_health.py",
-    "tests/",
-    "scripts/verify_public_surface.py"
-  ],
+  "completion_rule": "CRYSTALLIZED only after the exact canonicalized head builds an installable wheel, passes the complete behavioral/adversarial test suite, executes the installed CLI and direct operability surface, preserves the public truth boundary, and proves an empty material gap matrix.",
   "nonclaims": [
     "no SpaceX affiliation or proprietary access",
     "no real Raptor, Merlin, Falcon, Starship, test-stand, or flight telemetry",
-    "no engine-specific specification authority",
     "no calibrated failure probability, validated remaining useful life, or certified diagnosis",
     "no real throttle, shutdown, abort, thrust-redistribution, or flight-computer command authority",
-    "no live MCP, provider, APEX, AKOS, Mastermind, or agent-mesh integration",
-    "no production scale, deployment, flight readiness, or safety certification"
-  ],
-  "donor_plan": {
-    "mode": "bounded-capability-donor",
-    "donors": [
-      "per-unit-multi-sensor-health-evaluation",
-      "heuristic-threshold-trend-projection",
-      "cross-sensor-correlation",
-      "dependency-free-vibration-spectrum-analysis"
-    ]
-  }
+    "no production deployment, flight readiness, or safety certification"
+  ]
 }

@@ -15,6 +15,8 @@ APPROVED_CAPABILITIES = [
     "simple-degradation-curve-fitting",
     "dependency-free-vibration-spectrum-analysis",
     "local-python-verification",
+    "installable-local-library-and-cli",
+    "direct-operability-and-public-truth-verification",
 ]
 
 

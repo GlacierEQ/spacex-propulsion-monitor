@@ -1,26 +1,42 @@
 # Multi-Sensor Equipment Health Laboratory
 
-> **Deterministic local health scoring, threshold/anomaly detection, trend projection, correlation, and simulated state transitions for synthetic propulsion-like telemetry.**
+> **Installable, deterministic local health scoring, anomaly evaluation, simulated state transitions, trend/correlation diagnostics, degradation fits, and vibration spectra for synthetic or caller-supplied local telemetry.**
 
 This is an independent GlacierEQ portfolio repository. It is **not affiliated with, endorsed by, or connected to SpaceX** and has no access to Raptor, Merlin, Falcon, Starship, test-stand, flight, or proprietary engine telemetry or command systems.
 
 Evidence state: `LOCAL_PROPULSION_HEALTH_SIMULATION_NOT_FLIGHT_ENGINE_AUTHORITY`
 
-## Verified repository-owned scope
+## What the software does
 
-The admitted surface is a local software laboratory, not an engine-control system:
+The repository is a local software laboratory, not an engine-control system:
 
-- bounded health-index arithmetic for synthetic chamber-pressure ratio, mixture-ratio error, and vibration samples;
+- bounded health-index arithmetic for synthetic pressure-ratio, mixture-error, and vibration samples;
 - per-unit multi-sensor rolling windows, means, variance, rate-of-change, threshold checks, and outlier detection;
 - independent health state per simulated unit so one unit's anomaly cannot contaminate unrelated units;
 - fail-closed finite, non-negative, and monotonic sample validation;
 - isolated anomaly/shutdown observers so callback failures do not corrupt the state machine;
-- in-memory simulated startup, throttle-profile, shutdown, and emergency-stop **state transitions** with no external side effects;
-- linear threshold-crossing projection, cross-sensor correlation, simple degradation-curve fitting, and dependency-free vibration spectra;
-- diagnostic scores and projected threshold horizons explicitly labeled as **heuristics, not calibrated failure probability, diagnosis, or remaining useful life**;
-- repository-owned deterministic tests and cold-start operability.
+- in-memory simulated startup, throttle-profile, shutdown, and emergency-stop state transitions with no external side effects;
+- linear threshold-crossing projection, exact-timestamp cross-sensor correlation, simple degradation-curve fitting, and dependency-free vibration spectra;
+- diagnostic scores and projected threshold horizons explicitly labeled as **heuristics, not calibrated failure probability, diagnosis, or remaining useful life**.
 
 Historical class/file names such as `RaptorHealthMonitor`, `EngineController`, and `FailurePrediction` remain for source compatibility. Those names do not establish Raptor data, hardware control, flight authority, or validated failure prediction.
+
+## Install and execute
+
+```bash
+python -m pip install .
+health-lab-demo
+```
+
+The installed command exercises scalar health scoring, per-unit anomaly detection, simulated local state transitions, trend projection, and spectral analysis and emits a deterministic SHA-256 receipt with `external_actions_executed: 0`.
+
+Repository verification:
+
+```bash
+bash scripts/ci/verify.sh
+```
+
+That gate compiles source, runs deterministic/adversarial tests, builds and installs a wheel, executes the installed CLI, executes the direct canonical operator, verifies the public truth boundary, and enforces the machine crystallization manifests.
 
 ## Core implementation
 
@@ -30,29 +46,14 @@ Historical class/file names such as `RaptorHealthMonitor`, `EngineController`, a
 | `src/alpha/raptor_health.py` | Generic per-unit rolling sensor/anomaly evaluator; historical class alias retained |
 | `src/omega/engine_controller.py` | In-memory simulated multi-unit state coordinator |
 | `src/omega/predictive_health.py` | Heuristic trend/correlation/degradation/spectral diagnostics |
+| `src/health_lab_cli.py` | Installed deterministic product/demo surface |
+| `scripts/operate.py` | Direct repository operability probe |
 | `tests/` | Deterministic and adversarial local proof |
 | `scripts/verify_public_surface.py` | Fail-closed public/machine truth verifier |
+| `machine/crystallization/` | Purpose, capability, execution, gap, and completion evidence |
 
 ## Evidence boundary
 
-This repository does **not** claim:
+This repository does **not** claim SpaceX affiliation, proprietary or flight telemetry, engine-specific specification authority, calibrated failure probability, validated remaining useful life, certified diagnosis, real throttle/shutdown/abort authority, **flight-computer command authority**, production deployment, flight readiness, safety certification, or production-scale performance.
 
-- SpaceX affiliation, endorsement, employment, or proprietary access;
-- real Raptor, Merlin, Falcon, Starship, or test-stand telemetry;
-- 100+ live telemetry channels, real-time engine monitoring, or production-scale throughput;
-- validated engine-specific pressure, mixture-ratio, turbopump, thrust, or temperature specifications;
-- calibrated failure probability, 30–120 second failure prediction, validated remaining useful life, or certified fault diagnosis;
-- LSTM training on engine test-fire datasets or any proprietary training corpus;
-- real throttle, shutdown, abort, thrust-redistribution, or flight-computer command authority;
-- live MCP, provider, APEX, AKOS, Mastermind, or agent-mesh runtime integration;
-- production deployment, flight readiness, safety certification, or operational suitability.
-
-Any future claim above this ceiling requires new source, calibrated/independent evidence where applicable, deterministic tests, exact-head receipts, and a new governance admission.
-
-## Reproduce the admitted surface
-
-```bash
-bash scripts/ci/verify.sh
-```
-
-The gate compiles the source, runs deterministic/adversarial tests, executes the local operability probe, and verifies the public/machine truth boundary.
+Any future claim above this ceiling requires new source, calibrated/independent evidence where applicable, deterministic tests, exact-head receipts, and a new authority admission.

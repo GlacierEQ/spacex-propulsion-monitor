@@ -1,5 +1,6 @@
 {
-  "schema": "glaciereq.repository-capabilities.v1",
+  "schema": "glaciereq.repository-capabilities.v2",
+  "status": "FUNCTIONAL_CRYSTALLIZATION_CANDIDATE",
   "evidence_token": "LOCAL_PROPULSION_HEALTH_SIMULATION_NOT_FLIGHT_ENGINE_AUTHORITY",
   "capabilities": [
     "bounded-synthetic-health-indexing",
@@ -10,6 +11,9 @@
     "cross-sensor-correlation",
     "simple-degradation-curve-fitting",
     "dependency-free-vibration-spectrum-analysis",
-    "local-python-verification"
-  ]
+    "local-python-verification",
+    "installable-local-library-and-cli",
+    "direct-operability-and-public-truth-verification"
+  ],
+  "terminal_status_requires": "exact-head package, behavior, runtime, manifest, and public-truth verification plus a source-bound completion receipt"
 }

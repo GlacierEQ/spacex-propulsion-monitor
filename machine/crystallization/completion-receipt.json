@@ -1,0 +1,67 @@
+{
+  "schema": "glaciereq.crystallization-completion-receipt.v1",
+  "repository": "GlacierEQ/spacex-propulsion-monitor",
+  "status": "CRYSTALLIZED",
+  "verified_source_head": "8cb41b645d5b8b8f2de4743689ad1ac74395bd09",
+  "canonical_purpose": "Provide an independent, deterministic local software laboratory for multi-sensor equipment-health scoring, anomaly evaluation, simulated state transitions, and bounded diagnostic heuristics over caller-supplied synthetic/local telemetry.",
+  "evidence_state": "LOCAL_PROPULSION_HEALTH_SIMULATION_NOT_FLIGHT_ENGINE_AUTHORITY",
+  "capabilities": {
+    "material_count": 10,
+    "implemented_count": 10,
+    "verified_count": 10,
+    "remaining_gap_count": 0
+  },
+  "proof": {
+    "ci": {
+      "workflow_run_id": 31643387617,
+      "conclusion": "success",
+      "proved": [
+        "54 deterministic and adversarial tests",
+        "installable wheel build",
+        "installed health-lab-demo execution",
+        "direct canonical operability execution",
+        "public-surface verification",
+        "all crystallization capabilities WORKING",
+        "empty material gap matrix"
+      ]
+    },
+    "public_truth": {
+      "workflow_run_id": 31643387652,
+      "conclusion": "success",
+      "python_versions": ["3.11", "3.13"],
+      "proved": [
+        "exact source identity",
+        "non-affiliation boundary",
+        "local-simulation-only authority",
+        "explicit flight-computer non-authority",
+        "approved capability allowlist",
+        "no calibrated failure-probability or flight-control claim"
+      ]
+    }
+  },
+  "observed_runtime_receipt": {
+    "scalar_health_status": "GREEN",
+    "critical_local_anomaly": "VIBRATION",
+    "critical_local_anomaly_severity": "CRITICAL",
+    "simulated_startup": "SIMULATED_STARTUP",
+    "simulated_emergency_action": "SIMULATED_EMERGENCY_STOP",
+    "external_actions_executed": 0,
+    "demo_digest": "1e768e61008de0d7a98c863188a99bdc02263d9e9426cd3f7c94380a31469182"
+  },
+  "build": "PASS",
+  "tests": "PASS",
+  "runtime": "PASS",
+  "truth_verification": "PASS",
+  "deployment": {
+    "status": "NOT_APPLICABLE",
+    "reason": "The complete product is an installable local/reference software laboratory. A hosted, test-stand, flight, or physical-control deployment would introduce environment authority beyond the verified purpose."
+  },
+  "truth_boundary": [
+    "No SpaceX affiliation, endorsement, or proprietary access is established.",
+    "No real Raptor, Merlin, Falcon, Starship, test-stand, or flight telemetry is established.",
+    "No calibrated failure probability, validated remaining useful life, or certified diagnosis is established.",
+    "No throttle, shutdown, abort, thrust-redistribution, or flight-computer command authority is established.",
+    "No production deployment, flight readiness, safety certification, or production-scale performance is established."
+  ],
+  "receipt_head_rule": "This receipt is terminal only if the commit carrying it passes both repository CI and the Public Health Simulation Truth Gate and remains fresh against canonical main immediately before merge."
+}
