@@ -15,6 +15,8 @@ APPROVED_CAPABILITIES = [
     "simple-degradation-curve-fitting",
     "dependency-free-vibration-spectrum-analysis",
     "local-python-verification",
+    "installable-local-library-and-cli",
+    "direct-operability-and-public-truth-verification",
 ]
 
 
@@ -31,6 +33,7 @@ def main() -> None:
     capabilities = json.loads(read("machine/capabilities.json"))
     target = json.loads(read("machine/target-contract.json"))
     excellence = json.loads(read("machine/excellence-state.json"))
+    gaps = json.loads(read("machine/crystallization/gap-matrix.json"))
 
     for surface in (readme, health_index, monitor, predictive):
         assert TOKEN in surface
@@ -39,6 +42,7 @@ def main() -> None:
 
     assert "not affiliated with, endorsed by, or connected to SpaceX" in readme
     assert "Historical class/file names" in readme
+    assert "flight-computer command authority" in readme
     assert "Real-time Raptor/Merlin" not in readme
     assert "100+ engine telemetry" not in readme
     assert "LSTM anomaly detector trained on 1000+" not in readme
@@ -57,6 +61,7 @@ def main() -> None:
     assert target["verified_capability"] == (
         "deterministic-local-multi-sensor-health-evaluation"
     )
+    assert gaps["gaps"] == []
     assert excellence["principal_state"] == "TESTED"
     assert excellence["evidence_token"] == TOKEN
     assert "HYPER_VALIDATED" not in json.dumps(excellence, sort_keys=True)
