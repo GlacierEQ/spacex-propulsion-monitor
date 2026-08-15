@@ -32,6 +32,7 @@ def main() -> None:
     predictive = read("src/omega/predictive_health.py")
     capabilities = json.loads(read("machine/capabilities.json"))
     target = json.loads(read("machine/target-contract.json"))
+    planes = json.loads(read("machine/capability-planes.json"))
     excellence = json.loads(read("machine/excellence-state.json"))
     gaps = json.loads(read("machine/crystallization/gap-matrix.json"))
 
@@ -54,16 +55,36 @@ def main() -> None:
     assert "illustrative_threshold_horizon_not_rul" in predictive
     assert "SIMULATED_STARTUP" in controller
     assert "SIMULATED_EMERGENCY_STOP" in controller
+
     assert capabilities["capabilities"] == APPROVED_CAPABILITIES
     assert capabilities["evidence_token"] == TOKEN
-    assert target["evidence_token"] == TOKEN
-    assert target["current"]["deployed"] is False
-    assert target["verified_capability"] == (
+
+    evidence = target["evidence_checkpoint"]
+    assert evidence["evidence_token"] == TOKEN
+    assert evidence["verified_capability"] == (
         "deterministic-local-multi-sensor-health-evaluation"
     )
+    assert target["implementation_checkpoint"]["deployed"] is False
+    assert target["target_architecture"]["status"] == (
+        "PRESERVED_UNVERIFIED_TARGET_ARCHITECTURE"
+    )
+    assert len(target["target_architecture"]["objectives"]) >= 7
+
+    assert planes["projection"]["projection_may_overwrite_canonical_or_target"] is False
+    assert planes["target"]["status"] == "PRESERVED_UNVERIFIED_TARGET_ARCHITECTURE"
+    assert len(planes["target"]["items"]) >= 7
+    target_states = {item["state"] for item in planes["target"]["items"]}
+    assert "UNVERIFIED_TARGET" in target_states
+    assert "PARTIALLY_IMPLEMENTED_TARGET" in target_states
+
     assert gaps["gaps"] == []
-    assert excellence["principal_state"] == "TESTED"
-    assert excellence["evidence_token"] == TOKEN
+    assert excellence["product_state"] == "FUNCTIONAL_CRYSTALLIZATION_CANDIDATE"
+    assert excellence["evidence_state"] == "EXACT_HEAD_VERIFIED"
+    assert excellence["projection_state"] == TOKEN
+    assert excellence["target_state"] == "PRESERVED_UNVERIFIED_TARGET_ARCHITECTURE"
+    assert excellence["evidence_checkpoint"]["head_sha"] == (
+        "878283ace1aae2807ea8179b37aa8c1319f48cdd"
+    )
     assert "HYPER_VALIDATED" not in json.dumps(excellence, sort_keys=True)
 
     print(TOKEN)
