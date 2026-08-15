@@ -1,0 +1,136 @@
+{
+  "schema": "glaciereq.repository-capability-planes.v1",
+  "repository": "GlacierEQ/spacex-propulsion-monitor",
+  "governance_authority": {
+    "repository": "GlacierEQ/AKOS",
+    "canonical_commit": "09660d20fe1cfe03de169ce327cbe0e86f054e63",
+    "contract": "governance/projection_non_interference.v1.json"
+  },
+  "provenance": {
+    "pre_truth_hardening_head": "507a4645ce4c8605d14f470cf6b39799ea5ba58e",
+    "truth_hardening_head": "1903e562e801a6153b0e78b9d236418c849f1867",
+    "current_parent_head": "878283ace1aae2807ea8179b37aa8c1319f48cdd",
+    "historical_intent_source": "README.md@507a4645ce4c8605d14f470cf6b39799ea5ba58e",
+    "rule": "historical intent is preserved as provenance or target state; it is not silently promoted to current implementation or evidence"
+  },
+  "canonical": {
+    "identity": "propulsion-domain multi-sensor equipment-health and predictive-maintenance engineering laboratory",
+    "original_intent": [
+      "multi-parameter equipment-health monitoring",
+      "predictive health and degradation analysis",
+      "configurable threshold and alarm logic",
+      "performance-oriented propulsion-domain modeling",
+      "programmatic health-query and event-publication architecture",
+      "learned anomaly-detection extension"
+    ],
+    "non_affiliation": "independent GlacierEQ portfolio system; no SpaceX affiliation, endorsement, employment, proprietary access, or operational authority"
+  },
+  "implementation": {
+    "status": "FUNCTIONAL_CRYSTALLIZATION_CANDIDATE",
+    "implemented_capabilities": [
+      "bounded-synthetic-health-indexing",
+      "per-unit-multi-sensor-windowing",
+      "threshold-and-outlier-detection",
+      "local-state-transition-simulation",
+      "heuristic-threshold-trend-projection",
+      "cross-sensor-correlation",
+      "simple-degradation-curve-fitting",
+      "dependency-free-vibration-spectrum-analysis",
+      "installable-local-library-and-cli",
+      "direct-local-operability"
+    ],
+    "experimental_or_partial": [
+      "predictive-maintenance diagnostics beyond threshold heuristics",
+      "propulsion-domain performance modeling beyond the bounded current health index",
+      "programmatic integration surfaces beyond the installed local CLI"
+    ],
+    "source_paths": [
+      "src/prop_health.py",
+      "src/alpha/raptor_health.py",
+      "src/omega/engine_controller.py",
+      "src/omega/predictive_health.py"
+    ]
+  },
+  "evidence": {
+    "evidence_token": "LOCAL_PROPULSION_HEALTH_SIMULATION_NOT_FLIGHT_ENGINE_AUTHORITY",
+    "verified_capability": "deterministic-local-multi-sensor-health-evaluation",
+    "canonical_proof_head": "1903e562e801a6153b0e78b9d236418c849f1867",
+    "proof_receipts": [
+      {
+        "kind": "github_actions",
+        "name": "CI",
+        "id": 31546261209,
+        "head_sha": "1903e562e801a6153b0e78b9d236418c849f1867",
+        "conclusion": "success"
+      },
+      {
+        "kind": "github_actions",
+        "name": "Public Health Simulation Truth Gate",
+        "id": 31546261244,
+        "head_sha": "1903e562e801a6153b0e78b9d236418c849f1867",
+        "conclusion": "success"
+      }
+    ],
+    "note": "later crystallization may add stronger evidence, but evidence never replaces canonical or target state"
+  },
+  "projection": {
+    "public_claim_ceiling": "local synthetic multi-sensor equipment-health laboratory with deterministic health evaluation and heuristic diagnostics",
+    "public_readme": "README.md",
+    "projection_may_omit_unverified_target_state": true,
+    "projection_may_overwrite_canonical_or_target": false,
+    "nonclaims": [
+      "no real Raptor, Merlin, Falcon, Starship, test-stand, or flight telemetry",
+      "no calibrated failure probability, validated remaining useful life, or certified diagnosis",
+      "no real throttle, shutdown, abort, thrust redistribution, or flight-computer command authority",
+      "no production deployment, flight readiness, or safety certification"
+    ]
+  },
+  "target": {
+    "status": "PRESERVED_UNVERIFIED_TARGET_ARCHITECTURE",
+    "items": [
+      {
+        "capability": "high-channel-count multi-parameter monitoring",
+        "origin": "historical README",
+        "state": "UNVERIFIED_TARGET",
+        "note": "preserves the former 100+ channel monitoring ambition without claiming current scale"
+      },
+      {
+        "capability": "predictive health management beyond deterministic trend heuristics",
+        "origin": "historical README",
+        "state": "PARTIALLY_IMPLEMENTED_TARGET",
+        "note": "current code contains deterministic trend, correlation, degradation and spectrum mechanisms; calibrated prediction remains a target"
+      },
+      {
+        "capability": "red-yellow limit bands and deadband alarm architecture",
+        "origin": "historical README",
+        "state": "PARTIALLY_IMPLEMENTED_TARGET",
+        "note": "current threshold logic provides a base; full alarm-policy architecture remains a target"
+      },
+      {
+        "capability": "propulsion performance computation including specific-impulse and thrust-efficiency style modeling",
+        "origin": "historical README",
+        "state": "UNVERIFIED_TARGET",
+        "note": "preserved as non-affiliated propulsion-domain modeling target, not current engine specification authority"
+      },
+      {
+        "capability": "MCP-queryable equipment-health service",
+        "origin": "historical README",
+        "state": "UNVERIFIED_TARGET",
+        "note": "programmatic service target; no current live MCP integration claim"
+      },
+      {
+        "capability": "event publication to a governed agent or control-plane mesh",
+        "origin": "historical README",
+        "state": "UNVERIFIED_TARGET",
+        "note": "preserves the former Mastermind/APEX sidecar architecture as a generic governed integration target"
+      },
+      {
+        "capability": "learned anomaly-detection extension",
+        "origin": "historical README",
+        "state": "UNVERIFIED_TARGET",
+        "note": "preserves ML extension intent without retaining the unsupported historical training-corpus claim"
+      }
+    ],
+    "rule": "target items may advance only through implementation and evidence; absence of proof may not delete them"
+  }
+}
