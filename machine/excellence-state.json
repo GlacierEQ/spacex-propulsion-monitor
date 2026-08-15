@@ -1,10 +1,29 @@
 {
-  "schema": "glaciereq.repo-excellence-state.v1",
+  "schema": "glaciereq.repo-excellence-state.v2",
   "repository": "GlacierEQ/spacex-propulsion-monitor",
-  "principal_state": "TESTED",
-  "state": "TESTED",
+  "principal_state": "FUNCTIONAL_CRYSTALLIZATION_CANDIDATE",
+  "product_state": "FUNCTIONAL_CRYSTALLIZATION_CANDIDATE",
+  "evidence_state": "EXACT_HEAD_VERIFIED",
+  "projection_state": "LOCAL_PROPULSION_HEALTH_SIMULATION_NOT_FLIGHT_ENGINE_AUTHORITY",
+  "target_state": "PRESERVED_UNVERIFIED_TARGET_ARCHITECTURE",
+  "state_planes_ref": "machine/capability-planes.json",
   "verified_capability": "deterministic-local-multi-sensor-health-evaluation",
   "evidence_token": "LOCAL_PROPULSION_HEALTH_SIMULATION_NOT_FLIGHT_ENGINE_AUTHORITY",
+  "evidence_checkpoint": {
+    "head_sha": "878283ace1aae2807ea8179b37aa8c1319f48cdd",
+    "workflow_receipts": [
+      {
+        "name": "CI",
+        "id": 31643639659,
+        "conclusion": "success"
+      },
+      {
+        "name": "Public Health Simulation Truth Gate",
+        "id": 31643639777,
+        "conclusion": "success"
+      }
+    ]
+  },
   "gates": {
     "IDENTITY_RESOLVED": {
       "status": "PASS",
@@ -12,42 +31,43 @@
     },
     "TARGET_CONTRACT_FROZEN": {
       "status": "PASS",
-      "evidence": "machine/target-contract.json"
+      "evidence": "machine/target-contract.json preserves future architecture independently of evidence"
     },
     "CENTRAL_MECHANISM_PRESENT": {
       "status": "PASS",
-      "evidence": "local health scoring, per-unit rolling windows, state simulation, and diagnostic heuristics"
+      "evidence": "local health scoring, per-unit rolling windows, state simulation, diagnostic heuristics, installable package and CLI"
     },
     "DETERMINISTIC_PROOF_GREEN": {
-      "status": "PENDING",
-      "evidence": "requires current exact-head Public Health Simulation Truth Gate"
+      "status": "PASS",
+      "evidence": "exact-head CI 31643639659 on 878283ace1aae2807ea8179b37aa8c1319f48cdd"
     },
     "ADVERSARIAL_SURVIVAL": {
-      "status": "PENDING",
-      "evidence": "requires exact-head malformed-sample, observer-isolation, and cross-unit-isolation proof"
+      "status": "PASS",
+      "evidence": "repository-owned behavioral/adversarial suite executed by exact-head CI"
     },
     "OPERABLE_AND_OBSERVABLE": {
-      "status": "PENDING",
-      "evidence": "scripts/operate.py preserved; exact-head gate required"
+      "status": "PASS",
+      "evidence": "crystallized installable library/CLI and direct local operability verified by repository-owned gates"
     },
     "PROOF_RECEIPT_BOUND": {
-      "status": "PENDING",
-      "evidence": "historical local receipt is not current canonical GitHub proof"
+      "status": "PASS",
+      "evidence": "CI 31643639659 and Public Health Simulation Truth Gate 31643639777 are bound to exact current parent head"
     },
     "AUTHORITY_BOUND": {
-      "status": "PENDING",
-      "evidence": "local simulation authority is not engine, test-stand, flight, or safety authority"
+      "status": "PASS",
+      "evidence": "authority is explicitly local synthetic equipment-health software, not SpaceX, engine, test-stand, flight, or safety authority"
     },
     "PROJECTION_TRUTH_CLOSED": {
-      "status": "PENDING",
-      "evidence": "README and machine surfaces truth-hardened; exact-head gate required"
+      "status": "PASS",
+      "evidence": "Public Health Simulation Truth Gate 31643639777"
     },
     "CANONICAL_POSITION_RESOLVED": {
-      "status": "PENDING"
+      "status": "PENDING",
+      "evidence": "estate-level canonical position remains independently governed"
     },
     "EVOLUTION_CURSOR_DEFINED": {
       "status": "PASS",
-      "evidence": "next: exact-head local health truth gate then Helix surface admission"
+      "evidence": "advance target architecture through implementation and proof without replacing the preserved verified checkpoint"
     }
   },
   "nonclaims": [
@@ -59,9 +79,9 @@
   ],
   "contract_ref": "machine/target-contract.json",
   "scores_ref": "machine/excellence-scores.json",
-  "evolution_cursor": "next:exact-head-public-health-simulation-truth-gate_then_helix_admission",
+  "evolution_cursor": "next:advance_preserved_target_architecture_without_projection_contamination",
   "supersedes": {
-    "generic_migration_state": "PROMOTED",
-    "reason": "generic estate migration state contained placeholder proof identity and exceeded current repository-native claim scope"
+    "single_axis_principal_state": "TESTED",
+    "reason": "TESTED described the evidence/projection checkpoint and incorrectly replaced product maturity and target state"
   }
 }
