@@ -13,7 +13,32 @@
     "dependency-free-vibration-spectrum-analysis",
     "local-python-verification",
     "installable-local-library-and-cli",
-    "direct-operability-and-public-truth-verification"
+    "direct-operability-and-public-truth-verification",
+    "apex-mass-recovery-enrolled"
   ],
-  "terminal_status_requires": "exact-head package, behavior, runtime, manifest, and public-truth verification plus a source-bound completion receipt"
+  "terminal_status_requires": "exact-head package, behavior, runtime, manifest, and public-truth verification plus a source-bound completion receipt",
+  "recovery": {
+    "identity": "APEX_IS_THE_COUNTER_TO_CANONICAL_DESTRUCTION",
+    "law": "MAXIMUM_COHERENT_ADVANCE",
+    "program": "mass-job-repo-recovery",
+    "dual_plane": true
+  },
+  "planes": {
+    "verified": [
+      "bounded-synthetic-health-indexing",
+      "per-unit-multi-sensor-windowing",
+      "threshold-and-outlier-detection",
+      "local-state-transition-simulation",
+      "heuristic-threshold-trend-projection",
+      "cross-sensor-correlation",
+      "simple-degradation-curve-fitting",
+      "dependency-free-vibration-spectrum-analysis",
+      "local-python-verification",
+      "installable-local-library-and-cli",
+      "direct-operability-and-public-truth-verification"
+    ],
+    "implemented": [
+      "apex-mass-recovery-enrolled"
+    ]
+  }
 }
