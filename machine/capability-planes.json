@@ -1,19 +1,20 @@
 {
-  "schema": "glaciereq.repository-capability-planes.v1",
+  "schema": "glaciereq.repository-capability-evolution.v2",
   "repository": "GlacierEQ/spacex-propulsion-monitor",
-  "governance_authority": {
-    "repository": "GlacierEQ/AKOS",
-    "canonical_commit": "09660d20fe1cfe03de169ce327cbe0e86f054e63",
-    "contract": "governance/projection_non_interference.v1.json"
+  "apex": {
+    "contract": "GlacierEQ/AKOS/governance/apex_projection_evolution.v2.json@main",
+    "selection_mode": "CURRENT_BEST_REVISABLE",
+    "operator_objective_precedence": true,
+    "capability_donor_preservation": true
   },
   "provenance": {
     "pre_truth_hardening_head": "507a4645ce4c8605d14f470cf6b39799ea5ba58e",
     "truth_hardening_head": "1903e562e801a6153b0e78b9d236418c849f1867",
-    "current_parent_head": "878283ace1aae2807ea8179b37aa8c1319f48cdd",
+    "verified_parent_head": "878283ace1aae2807ea8179b37aa8c1319f48cdd",
     "historical_intent_source": "README.md@507a4645ce4c8605d14f470cf6b39799ea5ba58e",
-    "rule": "historical intent is preserved as provenance or target state; it is not silently promoted to current implementation or evidence"
+    "rule": "historical intent remains provenance or target state; implementation and evidence determine current factual claims"
   },
-  "canonical": {
+  "intent": {
     "identity": "propulsion-domain multi-sensor equipment-health and predictive-maintenance engineering laboratory",
     "original_intent": [
       "multi-parameter equipment-health monitoring",
@@ -54,47 +55,81 @@
   "evidence": {
     "evidence_token": "LOCAL_PROPULSION_HEALTH_SIMULATION_NOT_FLIGHT_ENGINE_AUTHORITY",
     "verified_capability": "deterministic-local-multi-sensor-health-evaluation",
-    "canonical_proof_head": "878283ace1aae2807ea8179b37aa8c1319f48cdd",
+    "verified_checkpoint_head": "878283ace1aae2807ea8179b37aa8c1319f48cdd",
     "proof_receipts": [
-      {
-        "kind": "github_actions",
-        "name": "CI",
-        "id": 31643639659,
-        "head_sha": "878283ace1aae2807ea8179b37aa8c1319f48cdd",
-        "conclusion": "success"
-      },
-      {
-        "kind": "github_actions",
-        "name": "Public Health Simulation Truth Gate",
-        "id": 31643639777,
-        "head_sha": "878283ace1aae2807ea8179b37aa8c1319f48cdd",
-        "conclusion": "success"
-      }
+      {"kind": "github_actions", "name": "CI", "id": 31643639659, "head_sha": "878283ace1aae2807ea8179b37aa8c1319f48cdd", "conclusion": "success"},
+      {"kind": "github_actions", "name": "Public Health Simulation Truth Gate", "id": 31643639777, "head_sha": "878283ace1aae2807ea8179b37aa8c1319f48cdd", "conclusion": "success"}
     ],
     "historical_truth_hardening_checkpoint": {
       "head_sha": "1903e562e801a6153b0e78b9d236418c849f1867",
       "proof_receipts": [
-        {
-          "kind": "github_actions",
-          "name": "CI",
-          "id": 31546261209,
-          "conclusion": "success"
-        },
-        {
-          "kind": "github_actions",
-          "name": "Public Health Simulation Truth Gate",
-          "id": 31546261244,
-          "conclusion": "success"
-        }
+        {"kind": "github_actions", "name": "CI", "id": 31546261209, "conclusion": "success"},
+        {"kind": "github_actions", "name": "Public Health Simulation Truth Gate", "id": 31546261244, "conclusion": "success"}
       ]
     },
-    "rule": "evidence may advance or regress independently; it never replaces canonical, implementation, or target state"
+    "rule": "evidence constrains current claims while verified checkpoints remain preserved as lineage"
   },
+  "selection": {
+    "mode": "CURRENT_BEST_REVISABLE",
+    "challengeable": true,
+    "capabilities": [
+      {
+        "capability": "deterministic-local-multi-sensor-health-evaluation",
+        "implementation_refs": ["src/prop_health.py", "src/alpha/raptor_health.py"],
+        "evidence_refs": ["LOCAL_PROPULSION_HEALTH_SIMULATION_NOT_FLIGHT_ENGINE_AUTHORITY", "github-actions:31643639659", "github-actions:31643639777"],
+        "reason": "strongest currently verified composition for bounded synthetic multi-sensor health evaluation",
+        "known_limits": ["synthetic inputs", "no calibrated failure probability", "no production deployment"]
+      },
+      {
+        "capability": "threshold-and-outlier-detection",
+        "implementation_refs": ["src/prop_health.py", "src/omega/predictive_health.py"],
+        "evidence_refs": ["github-actions:31643639659"],
+        "reason": "current tested local diagnostic route with deterministic failure semantics"
+      },
+      {
+        "capability": "cross-sensor-correlation",
+        "implementation_refs": ["src/omega/predictive_health.py"],
+        "evidence_refs": ["github-actions:31643639659"],
+        "reason": "implemented reusable analytical mechanism retained independently of broader prediction claims"
+      },
+      {
+        "capability": "degradation-and-trend-analysis",
+        "implementation_refs": ["src/omega/predictive_health.py"],
+        "evidence_refs": ["github-actions:31643639659"],
+        "reason": "current deterministic trend/degradation mechanism while calibrated prediction remains a challenger frontier"
+      },
+      {
+        "capability": "local-library-and-cli-operability",
+        "implementation_refs": ["src/prop_health.py"],
+        "evidence_refs": ["github-actions:31643639659"],
+        "reason": "verified local operability surface for current repository capability"
+      }
+    ],
+    "fitness_dimensions": [
+      "correctness", "capability_depth", "evidence_strength", "interoperability", "performance", "reliability", "maintainability", "human_legibility", "recency_relevance", "innovation_leverage", "composition_value", "recovery_cost"
+    ],
+    "reevaluate_on": [
+      "a predictive challenger gains benchmarked evidence",
+      "a donor exposes unique capability absent from the selected route",
+      "the operator objective requires a broader health model",
+      "current proof becomes stale or contradictory",
+      "a stronger service or event-publication composition becomes executable"
+    ]
+  },
+  "challengers": [
+    {"capability": "predictive-health-management", "state": "RESEARCH_CHALLENGER", "source_refs": ["src/omega/predictive_health.py"], "promotion_requires": ["reproducible benchmark", "calibration evidence", "adversarial tests"]},
+    {"capability": "learned-anomaly-detection", "state": "TARGET_CHALLENGER", "promotion_requires": ["reproducible dataset", "baseline comparison", "error analysis"]},
+    {"capability": "programmatic-health-query-service", "state": "TARGET_CHALLENGER", "promotion_requires": ["implemented interface", "integration tests", "failure semantics"]}
+  ],
+  "capability_donors": [
+    {"source": "src/omega/predictive_health.py", "unique_value": ["trend projection", "correlation", "degradation fitting", "vibration-spectrum analysis"], "preserve": true},
+    {"source": "src/omega/engine_controller.py", "unique_value": ["local state-transition and controller-oriented mechanisms"], "preserve": true}
+  ],
   "projection": {
     "public_claim_ceiling": "local synthetic multi-sensor equipment-health laboratory with deterministic health evaluation and heuristic diagnostics",
     "public_readme": "README.md",
     "projection_may_omit_unverified_target_state": true,
-    "projection_may_overwrite_canonical_or_target": false,
+    "projection_may_overwrite_intent_or_target": false,
     "nonclaims": [
       "no real Raptor, Merlin, Falcon, Starship, test-stand, or flight telemetry",
       "no calibrated failure probability, validated remaining useful life, or certified diagnosis",
@@ -103,51 +138,21 @@
     ]
   },
   "target": {
-    "status": "PRESERVED_UNVERIFIED_TARGET_ARCHITECTURE",
+    "status": "ACTIVE_FRONTIER",
     "items": [
-      {
-        "capability": "high-channel-count multi-parameter monitoring",
-        "origin": "historical README",
-        "state": "UNVERIFIED_TARGET",
-        "note": "preserves the former 100+ channel monitoring ambition without claiming current scale"
-      },
-      {
-        "capability": "predictive health management beyond deterministic trend heuristics",
-        "origin": "historical README",
-        "state": "PARTIALLY_IMPLEMENTED_TARGET",
-        "note": "current code contains deterministic trend, correlation, degradation and spectrum mechanisms; calibrated prediction remains a target"
-      },
-      {
-        "capability": "red-yellow limit bands and deadband alarm architecture",
-        "origin": "historical README",
-        "state": "PARTIALLY_IMPLEMENTED_TARGET",
-        "note": "current threshold logic provides a base; full alarm-policy architecture remains a target"
-      },
-      {
-        "capability": "propulsion performance computation including specific-impulse and thrust-efficiency style modeling",
-        "origin": "historical README",
-        "state": "UNVERIFIED_TARGET",
-        "note": "preserved as non-affiliated propulsion-domain modeling target, not current engine specification authority"
-      },
-      {
-        "capability": "MCP-queryable equipment-health service",
-        "origin": "historical README",
-        "state": "UNVERIFIED_TARGET",
-        "note": "programmatic service target; no current live MCP integration claim"
-      },
-      {
-        "capability": "event publication to a governed agent or control-plane mesh",
-        "origin": "historical README",
-        "state": "UNVERIFIED_TARGET",
-        "note": "preserves the former Mastermind/APEX sidecar architecture as a generic governed integration target"
-      },
-      {
-        "capability": "learned anomaly-detection extension",
-        "origin": "historical README",
-        "state": "UNVERIFIED_TARGET",
-        "note": "preserves ML extension intent without retaining the unsupported historical training-corpus claim"
-      }
+      {"capability": "high-channel-count multi-parameter monitoring", "origin": "historical README", "state": "UNVERIFIED_TARGET", "note": "preserves the former 100+ channel monitoring ambition without claiming current scale"},
+      {"capability": "predictive health management beyond deterministic trend heuristics", "origin": "historical README", "state": "PARTIALLY_IMPLEMENTED_TARGET", "note": "deterministic trend, correlation, degradation and spectrum mechanisms exist; calibrated prediction remains a target"},
+      {"capability": "red-yellow limit bands and deadband alarm architecture", "origin": "historical README", "state": "PARTIALLY_IMPLEMENTED_TARGET", "note": "current threshold logic provides a base; full alarm-policy architecture remains a target"},
+      {"capability": "propulsion performance computation including specific-impulse and thrust-efficiency style modeling", "origin": "historical README", "state": "UNVERIFIED_TARGET", "note": "non-affiliated propulsion-domain modeling target"},
+      {"capability": "programmatic equipment-health service", "origin": "historical README", "state": "UNVERIFIED_TARGET", "note": "programmatic service target; no current live integration claim"},
+      {"capability": "event publication to an agent or control-plane mesh", "origin": "historical README", "state": "UNVERIFIED_TARGET", "note": "integration target without claiming live connectivity"},
+      {"capability": "learned anomaly-detection extension", "origin": "historical README", "state": "UNVERIFIED_TARGET", "note": "ML extension intent preserved without unsupported training-corpus claims"}
     ],
-    "rule": "target items may advance only through implementation and evidence; absence of proof may not delete them"
+    "rule": "targets remain visible until realized, replaced by a stronger objective, or explicitly retired with capability-loss accounting"
+  },
+  "lineage": {
+    "verified_checkpoints": ["1903e562e801a6153b0e78b9d236418c849f1867", "878283ace1aae2807ea8179b37aa8c1319f48cdd"],
+    "migration": {"from": "retired freeze-oriented projection model", "to": "APEX capability evolution graph", "status": "complete"},
+    "recovery_rule": "preserve unique mechanisms, proof receipts, target commitments, and rollback evidence before replacement or retirement"
   }
 }
