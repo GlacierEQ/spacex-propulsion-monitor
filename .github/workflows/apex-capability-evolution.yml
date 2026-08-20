@@ -5,11 +5,23 @@ on:
     paths:
       - machine/capability-planes.json
       - machine/target-contract.json
+      - machine/excellence-state.json
+      - machine/excellence-scores.json
+      - scripts/verify_public_surface.py
+      - scripts/operate.py
+      - README.md
+      - AKOS.md
       - .github/workflows/apex-capability-evolution.yml
   pull_request:
     paths:
       - machine/capability-planes.json
       - machine/target-contract.json
+      - machine/excellence-state.json
+      - machine/excellence-scores.json
+      - scripts/verify_public_surface.py
+      - scripts/operate.py
+      - README.md
+      - AKOS.md
       - .github/workflows/apex-capability-evolution.yml
 
 permissions:
