@@ -36,7 +36,7 @@ Repository verification:
 bash scripts/ci/verify.sh
 ```
 
-That gate compiles source, runs deterministic/adversarial tests, builds and installs a wheel, executes the installed CLI, executes the direct canonical operator, verifies the public truth boundary, and enforces the machine crystallization manifests.
+That gate compiles source, runs deterministic/adversarial tests, builds and installs a wheel, executes the installed CLI, executes the selected direct operator, verifies the public truth boundary, and enforces the active machine contracts.
 
 ## Core implementation
 
@@ -50,10 +50,15 @@ That gate compiles source, runs deterministic/adversarial tests, builds and inst
 | `scripts/operate.py` | Direct repository operability probe |
 | `tests/` | Deterministic and adversarial local proof |
 | `scripts/verify_public_surface.py` | Fail-closed public/machine truth verifier |
+| `machine/capability-planes.json` | APEX capability selections, challengers, donors, target frontier, evidence, and lineage |
 | `machine/crystallization/` | Purpose, capability, execution, gap, and completion evidence |
+
+## APEX evolution
+
+Current implementations are selected per capability and remain challengeable. Predictive-health research, controller mechanisms, anomaly work, service integration, and alarm-policy work remain visible as challengers, donors, or target-frontier items rather than being discarded because they exceed today's public proof ceiling.
 
 ## Evidence boundary
 
 This repository does **not** claim SpaceX affiliation, proprietary or flight telemetry, engine-specific specification authority, calibrated failure probability, validated remaining useful life, certified diagnosis, real throttle/shutdown/abort authority, **flight-computer command authority**, production deployment, flight readiness, safety certification, or production-scale performance.
 
-Any future claim above this ceiling requires new source, calibrated/independent evidence where applicable, deterministic tests, exact-head receipts, and a new authority admission.
+Any future claim above this ceiling requires new source, calibrated or independent evidence where applicable, deterministic tests, exact-head receipts, and successful APEX capability-graph re-evaluation for the relevant capability.
