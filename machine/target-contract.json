@@ -1,14 +1,13 @@
 {
-  "schema": "glaciereq.repo-target-contract.v3",
-  "identity": {
-    "repository_id": "GlacierEQ/spacex-propulsion-monitor",
-    "canonical_identity": "propulsion-domain multi-sensor equipment-health and predictive-maintenance engineering laboratory",
-    "non_affiliation": "independent GlacierEQ portfolio system; no SpaceX affiliation, endorsement, employment, proprietary access, or operational authority"
-  },
-  "authority": {
-    "projection_non_interference": "GlacierEQ/AKOS@09660d20fe1cfe03de169ce327cbe0e86f054e63/governance/projection_non_interference.v1.json",
-    "capability_planes": "machine/capability-planes.json",
-    "rule": "the target contract preserves intended future architecture; current evidence constrains projection claimability but does not replace the target"
+  "schema": "glaciereq.repo-target-contract.v4",
+  "repository": "GlacierEQ/spacex-propulsion-monitor",
+  "identity": "propulsion-domain multi-sensor equipment-health and predictive-maintenance engineering laboratory",
+  "non_affiliation": "independent GlacierEQ portfolio system; no SpaceX affiliation, endorsement, employment, proprietary access, or operational authority",
+  "apex": {
+    "contract": "GlacierEQ/AKOS/governance/apex_projection_evolution.v2.json@main",
+    "capability_graph": "machine/capability-planes.json",
+    "selection_mode": "CURRENT_BEST_REVISABLE",
+    "rule": "current implementation is selected per capability, remains challengeable, and may be replaced or composed when stronger verified engineering appears"
   },
   "implementation_checkpoint": {
     "state": "FUNCTIONAL_CRYSTALLIZATION_CANDIDATE",
@@ -17,26 +16,27 @@
     "terminal_current_head_verified": false,
     "deployed": false,
     "naturally_deployable": false,
-    "completion_rule": "CRYSTALLIZED only after the exact canonicalized head builds an installable wheel, passes the complete behavioral/adversarial test suite, executes the installed CLI and direct operability surface, preserves the public truth boundary, and proves an empty material gap matrix."
+    "completion_rule": "advance only after the exact reviewed head builds an installable wheel, passes complete behavioral and adversarial tests, executes installed CLI and direct operability surfaces, preserves public truth boundaries, and reports material capability gaps explicitly"
   },
   "evidence_checkpoint": {
     "verified_capability": "deterministic-local-multi-sensor-health-evaluation",
     "evidence_token": "LOCAL_PROPULSION_HEALTH_SIMULATION_NOT_FLIGHT_ENGINE_AUTHORITY",
+    "verified_checkpoint_head": "878283ace1aae2807ea8179b37aa8c1319f48cdd",
     "claim_ceiling_applies_to": "projection"
   },
   "target_architecture": {
-    "status": "PRESERVED_UNVERIFIED_TARGET_ARCHITECTURE",
+    "status": "ACTIVE_FRONTIER",
     "source": "machine/capability-planes.json#target",
     "objectives": [
       "scale multi-parameter monitoring beyond the bounded current local fixture set",
       "advance deterministic diagnostics toward rigorously evaluated predictive-maintenance models",
       "develop explicit red-yellow limit and deadband policy architecture on top of current threshold primitives",
       "add non-affiliated propulsion performance modeling such as specific-impulse and thrust-efficiency style calculations using documented synthetic inputs",
-      "expose a governed programmatic equipment-health query service",
-      "publish bounded health events into a governed agent or control-plane integration surface",
+      "expose a programmatic equipment-health query service",
+      "publish bounded health events into an agent or control-plane integration surface",
       "evaluate learned anomaly-detection approaches against reproducible synthetic or openly sourced benchmark data"
     ],
-    "promotion_rule": "each target objective remains a target until implementation exists and new evidence is bound; lack of evidence may not erase the objective"
+    "advance_rule": "each objective remains visible until implementation and evidence support it, a stronger objective replaces it, or explicit capability-loss accounting justifies retirement"
   },
   "nonclaims": [
     "no SpaceX affiliation or proprietary access",
