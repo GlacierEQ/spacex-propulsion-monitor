@@ -1,87 +1,46 @@
 {
-  "schema": "glaciereq.repo-excellence-state.v2",
+  "schema": "glaciereq.repo-excellence-state.v3",
   "repository": "GlacierEQ/spacex-propulsion-monitor",
-  "principal_state": "FUNCTIONAL_CRYSTALLIZATION_CANDIDATE",
   "product_state": "FUNCTIONAL_CRYSTALLIZATION_CANDIDATE",
   "evidence_state": "EXACT_HEAD_VERIFIED",
   "projection_state": "LOCAL_PROPULSION_HEALTH_SIMULATION_NOT_FLIGHT_ENGINE_AUTHORITY",
-  "target_state": "PRESERVED_UNVERIFIED_TARGET_ARCHITECTURE",
+  "target_state": "ACTIVE_FRONTIER",
+  "selection_state": "CURRENT_BEST_REVISABLE",
+  "selection_challengeable": true,
+  "capability_donor_preservation": true,
   "state_planes_ref": "machine/capability-planes.json",
   "verified_capability": "deterministic-local-multi-sensor-health-evaluation",
   "evidence_token": "LOCAL_PROPULSION_HEALTH_SIMULATION_NOT_FLIGHT_ENGINE_AUTHORITY",
   "evidence_checkpoint": {
     "head_sha": "878283ace1aae2807ea8179b37aa8c1319f48cdd",
     "workflow_receipts": [
-      {
-        "name": "CI",
-        "id": 31643639659,
-        "conclusion": "success"
-      },
-      {
-        "name": "Public Health Simulation Truth Gate",
-        "id": 31643639777,
-        "conclusion": "success"
-      }
+      {"name": "CI", "id": 31643639659, "conclusion": "success"},
+      {"name": "Public Health Simulation Truth Gate", "id": 31643639777, "conclusion": "success"}
     ]
   },
   "gates": {
-    "IDENTITY_RESOLVED": {
-      "status": "PASS",
-      "evidence": "github GlacierEQ/spacex-propulsion-monitor"
-    },
-    "TARGET_CONTRACT_FROZEN": {
-      "status": "PASS",
-      "evidence": "machine/target-contract.json preserves future architecture independently of evidence"
-    },
-    "CENTRAL_MECHANISM_PRESENT": {
-      "status": "PASS",
-      "evidence": "local health scoring, per-unit rolling windows, state simulation, diagnostic heuristics, installable package and CLI"
-    },
-    "DETERMINISTIC_PROOF_GREEN": {
-      "status": "PASS",
-      "evidence": "exact-head CI 31643639659 on 878283ace1aae2807ea8179b37aa8c1319f48cdd"
-    },
-    "ADVERSARIAL_SURVIVAL": {
-      "status": "PASS",
-      "evidence": "repository-owned behavioral/adversarial suite executed by exact-head CI"
-    },
-    "OPERABLE_AND_OBSERVABLE": {
-      "status": "PASS",
-      "evidence": "crystallized installable library/CLI and direct local operability verified by repository-owned gates"
-    },
-    "PROOF_RECEIPT_BOUND": {
-      "status": "PASS",
-      "evidence": "CI 31643639659 and Public Health Simulation Truth Gate 31643639777 are bound to exact current parent head"
-    },
-    "AUTHORITY_BOUND": {
-      "status": "PASS",
-      "evidence": "authority is explicitly local synthetic equipment-health software, not SpaceX, engine, test-stand, flight, or safety authority"
-    },
-    "PROJECTION_TRUTH_CLOSED": {
-      "status": "PASS",
-      "evidence": "Public Health Simulation Truth Gate 31643639777"
-    },
-    "CANONICAL_POSITION_RESOLVED": {
-      "status": "PENDING",
-      "evidence": "estate-level canonical position remains independently governed"
-    },
-    "EVOLUTION_CURSOR_DEFINED": {
-      "status": "PASS",
-      "evidence": "advance target architecture through implementation and proof without replacing the preserved verified checkpoint"
-    }
+    "IDENTITY_RESOLVED": {"status": "PASS", "evidence": "github GlacierEQ/spacex-propulsion-monitor"},
+    "CAPABILITY_GRAPH_BOUND": {"status": "PASS", "evidence": "machine/capability-planes.json uses APEX capability evolution v2"},
+    "SELECTION_CHALLENGEABLE": {"status": "PASS", "evidence": "current capability selections are CURRENT_BEST_REVISABLE"},
+    "DONOR_PRESERVATION_BOUND": {"status": "PASS", "evidence": "predictive-health and controller mechanisms remain explicit capability donors"},
+    "CENTRAL_MECHANISM_PRESENT": {"status": "PASS", "evidence": "health scoring, per-unit rolling windows, state simulation, diagnostic heuristics, installable package and CLI"},
+    "DETERMINISTIC_PROOF_GREEN": {"status": "PASS", "evidence": "exact-head CI 31643639659 on 878283ace1aae2807ea8179b37aa8c1319f48cdd"},
+    "ADVERSARIAL_SURVIVAL": {"status": "PASS", "evidence": "repository-owned behavioral/adversarial suite executed by exact-head CI"},
+    "OPERABLE_AND_OBSERVABLE": {"status": "PASS", "evidence": "installable library/CLI and direct local operability verified by repository-owned gates"},
+    "PROOF_RECEIPT_BOUND": {"status": "PASS", "evidence": "CI 31643639659 and Public Health Simulation Truth Gate 31643639777 are bound to the verified checkpoint"},
+    "SCOPE_BOUND": {"status": "PASS", "evidence": "scope is local synthetic equipment-health software, not real engine, test-stand, flight, or safety control"},
+    "PROJECTION_TRUTH_CLOSED": {"status": "PASS", "evidence": "Public Health Simulation Truth Gate 31643639777"},
+    "EVOLUTION_CURSOR_DEFINED": {"status": "PASS", "evidence": "advance predictive, service, alarm-policy, and anomaly-detection frontiers while preserving proof and donor value"}
   },
   "nonclaims": [
     "no SpaceX affiliation or proprietary engine data",
     "no calibrated engine failure probability or remaining-useful-life validation",
     "no real throttle, shutdown, abort, thrust-redistribution, or flight-computer command authority",
-    "no live MCP, provider, APEX, AKOS, Mastermind, or agent-mesh runtime integration",
+    "no live provider, APEX, AKOS, Mastermind, or agent-mesh runtime integration",
     "no production deployment, flight readiness, or safety certification"
   ],
   "contract_ref": "machine/target-contract.json",
   "scores_ref": "machine/excellence-scores.json",
-  "evolution_cursor": "next:advance_preserved_target_architecture_without_projection_contamination",
-  "supersedes": {
-    "single_axis_principal_state": "TESTED",
-    "reason": "TESTED described the evidence/projection checkpoint and incorrectly replaced product maturity and target state"
-  }
+  "evolution_cursor": "next:compare_predictive_challengers_and_advance_active_frontier",
+  "recovery_rule": "preserve verified checkpoints, unique mechanisms, donors, and target commitments during improvement"
 }
