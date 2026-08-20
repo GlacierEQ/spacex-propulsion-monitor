@@ -1,0 +1,20 @@
+name: APEX Capability Evolution
+
+on:
+  push:
+    paths:
+      - machine/capability-planes.json
+      - machine/target-contract.json
+      - .github/workflows/apex-capability-evolution.yml
+  pull_request:
+    paths:
+      - machine/capability-planes.json
+      - machine/target-contract.json
+      - .github/workflows/apex-capability-evolution.yml
+
+permissions:
+  contents: read
+
+jobs:
+  apex-capability-evolution:
+    uses: GlacierEQ/AKOS/.github/workflows/apex-capability-evolution-reusable.yml@main
