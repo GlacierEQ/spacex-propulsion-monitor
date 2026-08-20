@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Execute the canonical local health-lab product surface directly."""
+"""Execute the selected local health-lab product surface directly."""
 from __future__ import annotations
 
 import json
