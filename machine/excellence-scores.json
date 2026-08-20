@@ -1,20 +1,25 @@
 {
-  "schema": "glaciereq.repo-excellence-scores.v1",
+  "schema": "glaciereq.repo-excellence-scores.v2",
   "repository": "GlacierEQ/spacex-propulsion-monitor",
+  "scoring_mode": "OBJECTIVE_RELATIVE_MULTIDIMENSIONAL",
   "never_collapse": true,
+  "selection_mode": "CURRENT_BEST_REVISABLE",
   "axes": {
-    "target_architecture": {
-      "grade": "B"
-    },
-    "current_proof": {
-      "grade": "A"
-    },
-    "company_fit": {
-      "score": 0.0
-    },
-    "canonical_confidence": {
-      "score": 0.0,
-      "role": "PROMOTED_LEAF"
-    }
+    "target_frontier": {"grade": "B", "provenance": "preserved prior target-architecture score"},
+    "current_proof": {"grade": "A", "provenance": "preserved prior proof score"},
+    "company_fit": {"score": 0.0, "controls_selection": false},
+    "objective_fit": {"state": "MISSION_DEPENDENT", "source": "operator objective"},
+    "capability_depth": {"state": "DERIVE_FROM_CAPABILITY_GRAPH"},
+    "evidence_strength": {"state": "DERIVE_FROM_PROOF_RECEIPTS"},
+    "interoperability": {"state": "COMPARE_IMPLEMENTATION_BOUNDARIES"},
+    "innovation_leverage": {"state": "COMPARE_CHALLENGERS_AND_TARGETS"},
+    "composition_value": {"state": "COMPARE_DONORS_AND_COMPOSITIONS"},
+    "recovery_cost": {"state": "BOUND_BY_LINEAGE_AND_RECOVERY"}
+  },
+  "selection": {
+    "challengeable": true,
+    "confidence_scope": "EVIDENCE_AND_OBJECTIVE_SCOPED_NOT_PERMANENT",
+    "graph_ref": "machine/capability-planes.json",
+    "reevaluate_on": "machine/capability-planes.json#selection/reevaluate_on"
   }
 }
