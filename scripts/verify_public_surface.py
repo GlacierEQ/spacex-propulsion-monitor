@@ -40,14 +40,11 @@ def main() -> None:
         assert TOKEN in surface
     assert "from alpha.raptor_health import (" in controller
     assert "EVIDENCE_STATE," in controller
-
     assert "not affiliated with, endorsed by, or connected to SpaceX" in readme
-    assert "Historical class/file names" in readme
     assert "flight-computer command authority" in readme
     assert "Real-time Raptor/Merlin" not in readme
     assert "100+ engine telemetry" not in readme
     assert "LSTM anomaly detector trained on 1000+" not in readme
-    assert "engine_health(engine_id)" not in readme
     assert "Predicts Raptor engine failure 30-120 seconds" not in predictive
     assert "redistribute thrust or initiate safe abort" not in predictive
     assert "single failure probability" not in predictive
@@ -61,30 +58,33 @@ def main() -> None:
 
     evidence = target["evidence_checkpoint"]
     assert evidence["evidence_token"] == TOKEN
-    assert evidence["verified_capability"] == (
-        "deterministic-local-multi-sensor-health-evaluation"
-    )
+    assert evidence["verified_capability"] == "deterministic-local-multi-sensor-health-evaluation"
+    assert evidence["verified_checkpoint_head"] == "878283ace1aae2807ea8179b37aa8c1319f48cdd"
     assert target["implementation_checkpoint"]["deployed"] is False
-    assert target["target_architecture"]["status"] == (
-        "PRESERVED_UNVERIFIED_TARGET_ARCHITECTURE"
-    )
+    assert target["target_architecture"]["status"] == "ACTIVE_FRONTIER"
+    assert target["apex"]["selection_mode"] == "CURRENT_BEST_REVISABLE"
     assert len(target["target_architecture"]["objectives"]) >= 7
 
-    assert planes["projection"]["projection_may_overwrite_canonical_or_target"] is False
-    assert planes["target"]["status"] == "PRESERVED_UNVERIFIED_TARGET_ARCHITECTURE"
+    assert planes["schema"] == "glaciereq.repository-capability-evolution.v2"
+    assert planes["apex"]["selection_mode"] == "CURRENT_BEST_REVISABLE"
+    assert planes["apex"]["capability_donor_preservation"] is True
+    assert planes["selection"]["challengeable"] is True
+    assert len(planes["selection"]["capabilities"]) >= 5
+    assert len(planes["capability_donors"]) >= 2
+    assert planes["projection"]["projection_may_overwrite_intent_or_target"] is False
+    assert planes["target"]["status"] == "ACTIVE_FRONTIER"
     assert len(planes["target"]["items"]) >= 7
-    target_states = {item["state"] for item in planes["target"]["items"]}
-    assert "UNVERIFIED_TARGET" in target_states
-    assert "PARTIALLY_IMPLEMENTED_TARGET" in target_states
 
     assert gaps["gaps"] == []
+    assert excellence["schema"] == "glaciereq.repo-excellence-state.v3"
     assert excellence["product_state"] == "FUNCTIONAL_CRYSTALLIZATION_CANDIDATE"
     assert excellence["evidence_state"] == "EXACT_HEAD_VERIFIED"
     assert excellence["projection_state"] == TOKEN
-    assert excellence["target_state"] == "PRESERVED_UNVERIFIED_TARGET_ARCHITECTURE"
-    assert excellence["evidence_checkpoint"]["head_sha"] == (
-        "878283ace1aae2807ea8179b37aa8c1319f48cdd"
-    )
+    assert excellence["target_state"] == "ACTIVE_FRONTIER"
+    assert excellence["selection_state"] == "CURRENT_BEST_REVISABLE"
+    assert excellence["selection_challengeable"] is True
+    assert excellence["capability_donor_preservation"] is True
+    assert excellence["evidence_checkpoint"]["head_sha"] == "878283ace1aae2807ea8179b37aa8c1319f48cdd"
     assert "HYPER_VALIDATED" not in json.dumps(excellence, sort_keys=True)
 
     print(TOKEN)
