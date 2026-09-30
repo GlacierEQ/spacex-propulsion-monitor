@@ -4,12 +4,12 @@
   "source_sha": "d441e067adb52da9e3a30ac4f6f2db2771b401fc36bfbe9db0b7338f1500359a",
   "proof_id": "elite-spacex-propulsion-monitor-1786335149",
   "environment": {
-    "python": "/Users/kcbflux/job-app/excellence/.venv-elite/bin/python",
-    "PYTHONPATH": "/Users/kcbflux/job-app/repos/spacex-propulsion-monitor:/Users/kcbflux/job-app/repos/spacex-propulsion-monitor/src",
+    "python": "${HOME}/job-app/excellence/.venv-elite/bin/python",
+    "PYTHONPATH": "${HOME}/job-app/repos/spacex-propulsion-monitor:${HOME}/job-app/repos/spacex-propulsion-monitor/src",
     "entry": "unittest"
   },
   "tests": [
-    "/Users/kcbflux/job-app/excellence/.venv-elite/bin/python -m unittest discover -s tests -v (x2)"
+    "${HOME}/job-app/excellence/.venv-elite/bin/python -m unittest discover -s tests -v (x2)"
   ],
   "adversarial_tests": [
     "tests/test_adversarial.py"
